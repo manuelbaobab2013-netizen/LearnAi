@@ -797,73 +797,19 @@ function chooseSubject(subject){
  currentSubject=subject;
 
  const chat=document.getElementById("chat");
+}catch(error){
 
- chat.innerHTML+=`
- <div class="message ai">
- Great! We're studying <strong>${escapeHTML(subject)}</strong>.
- Ask me anything about ${escapeHTML(subject)}.
- </div>
- `;
+  console.error(error);
 
- chat.scrollTop=chat.scrollHeight;
+  thinking.textContent =
+   "AI Error: " + error.message;
+
 }
 
-function newChat(){
-
- document.getElementById("chat").innerHTML=`
- <div class="message ai">
- New chat started. What would you like to learn?
- </div>
- `;
+chat.scrollTop=chat.scrollHeight;
 }
 
-function handleEnter(event){
-
- if(event.key==="Enter")sendMessage();
-}
-
-/*
- IMPORTANT:
- The browser must NOT contain your OpenAI secret key.
-
- This function calls your secure backend:
- POST /api/ai
-
- The backend should call the AI provider securely.
-*/
-
-async function sendMessage(){
-
- const input=document.getElementById("question");
- const question=input.value.trim();
-
- if(!question)return;
-
- const chat=document.getElementById("chat");
-
- chat.innerHTML+=`
- <div class="message user">${escapeHTML(question)}</div>
- `;
-
- input.value="";
-
- const thinking=document.createElement("div");
- thinking.className="message ai";
- thinking.textContent="Thinking...";
- chat.appendChild(thinking);
-
- chat.scrollTop=chat.scrollHeight;
-
- try{
-
-  const level=document.getElementById("level").value;
-
-  const response=await fetch("/api/ai",{
-   method:"POST",
-   headers:{
-    "Content-Type":"application/json"
-   },
-   body:JSON.stringify({
+function generate(type){JSON.stringify({
     question:question,
     subject:currentSubject,
     level:level
