@@ -10,21 +10,26 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Question is required" });
     }
 
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        error: "OPENAI_API_KEY is missing in Vercel"
+      });
+    }
+
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-     "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-5.6-luna",
         instructions: `You are the LearnAI AI Tutor.
-Be friendly, patient, encouraging, respectful and calm.
-Explain things clearly and step by step.
-Match explanations to the student's level.
+Be friendly, patient and educational.
+Explain things step by step.
+Match the student's learning level.
 Subject: ${subject || "General"}
-Student level: ${level || "Beginner"}
-Keep answers age-appropriate and educational.`,
+Student level: ${level || "Beginner"}`,
         input: question
       })
     });
@@ -32,20 +37,22 @@ Keep answers age-appropriate and educational.`,
     const data = await response.json();
 
     if (!response.ok) {
-      console.error(data);
+      console.error("OpenAI error:", data);
+
       return res.status(response.status).json({
-        error: "OpenAI request failed"
+        error: data.error?.message || "OpenAI request failed"
       });
     }
 
     return res.status(200).json({
-      answer: data.output_text || "I couldn't generate an answer."
+      answer: data.output_text || "No answer returned."
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Server error:", error);
+
     return res.status(500).json({
-      error: "Server error"
+      error: error.message || "Server error"
     });
   }
 }
