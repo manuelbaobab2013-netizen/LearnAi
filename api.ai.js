@@ -54,10 +54,17 @@ if (!answer && data.output) {
     .join("");
 }
 
-return res.status(200).json({
-  answer: answer || "No answer returned"
-});
+if (!answer) {
+  console.error("NO ANSWER FROM OPENAI:", JSON.stringify(data));
 
+  return res.status(500).json({
+    error: "OpenAI returned no answer. Check Vercel logs."
+  });
+}
+
+return res.status(200).json({
+  answer: answer
+});
   } catch (error) {
     console.error("Server error:", error);
 
