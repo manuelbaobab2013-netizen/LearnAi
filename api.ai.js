@@ -44,9 +44,19 @@ Student level: ${level || "Beginner"}`,
       });
     }
 
-    return res.status(200).json({
-      answer: data.output_text || "No answer returned."
-    });
+    let answer = data.output_text;
+
+if (!answer && data.output) {
+  answer = data.output
+    .flatMap(item => item.content || [])
+    .filter(item => item.type === "output_text")
+    .map(item => item.text)
+    .join("");
+}
+
+return res.status(200).json({
+  answer: answer || "No answer returned"
+});
 
   } catch (error) {
     console.error("Server error:", error);
