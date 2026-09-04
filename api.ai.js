@@ -35,7 +35,7 @@ Student level: ${level || "Beginner"}`,
     });
 
     const data = await response.json();
-
+console.log("OPENAI DATA:", JSON.stringify(data));
     if (!response.ok) {
       console.error("OpenAI error:", data);
 
