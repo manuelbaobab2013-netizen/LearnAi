@@ -792,51 +792,96 @@ function openPage(pageId,button){
  if(button)button.classList.add("active");
 }
 
+
 function chooseSubject(subject){
 
  currentSubject=subject;
 
  const chat=document.getElementById("chat");
-}catch(error){
 
-  console.error(error);
-
-  thinking.textContent =
-   "AI Error: " + error.message;
+ chat.innerHTML=`
+ <div class="message ai">
+ Subject selected: ${escapeHTML(subject)}.<br><br>
+ What would you like to learn?
+ </div>
+ `;
 
 }
 
-chat.scrollTop=chat.scrollHeight;
-}
+async function sendMessage(){
 
-function generate(type){JSON.stringify({
+ const input=document.getElementById("question");
+ const question=input.value.trim();
+
+ if(!question)return;
+
+ const chat=document.getElementById("chat");
+
+ chat.innerHTML+=`
+ <div class="message user">${escapeHTML(question)}</div>
+ `;
+
+ input.value="";
+
+ const thinking=document.createElement("div");
+ thinking.className="message ai";
+ thinking.textContent="Thinking...";
+ chat.appendChild(thinking);
+
+ try{
+
+  const level=document.getElementById("level").value;
+
+  const response=await fetch("/api/ai",{
+   method:"POST",
+   headers:{
+    "Content-Type":"application/json"
+   },
+   body:JSON.stringify({
     question:question,
     subject:currentSubject,
     level:level
    })
   });
 
-  if(!response.ok){
-   throw new Error("AI backend unavailable");
-  }
-
   const data=await response.json();
 
-  thinking.textContent=
-   data.answer ||
-   "I couldn't get an answer right now. Please try again.";
+  if(!response.ok){
+   throw new Error(data.error || "AI backend unavailable");
+  }
+
+  thinking.textContent=data.answer || "I couldn't get an answer right now.";
 
  }catch(error){
 
-  thinking.textContent=
-   "The AI Tutor is not connected yet. Your website is ready for the secure AI connection.";
+  console.error(error);
+  thinking.textContent="AI Error: " + error.message;
 
  }
 
  chat.scrollTop=chat.scrollHeight;
 }
 
+function handleEnter(event){
+
+ if(event.key==="Enter"){
+  sendMessage();
+ }
+
+}
+
+function newChat(){
+
+ document.getElementById("chat").innerHTML=`
+ <div class="message ai">
+ Hi! I'm your LearnAI Tutor. 🤖<br><br>
+ Choose a subject and ask me a question.
+ </div>
+ `;
+
+}
 function generate(type){
+
 
  const box=document.getElementById("generatedContent");
 
