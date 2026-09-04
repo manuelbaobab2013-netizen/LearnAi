@@ -7,10 +7,14 @@ export default async function handler(req, res) {
     const { question, subject, level } = req.body || {};
 
     if (!question) {
-      return res.status(400).json({ error: "Question is required" });
+      return res.status(400).json({
+        error: "Question is required"
+      });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
       return res.status(500).json({
         error: "OPENAI_API_KEY is missing in Vercel"
       });
@@ -20,14 +24,17 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: "gpt-5.6-luna",
         instructions: `You are the LearnAI AI Tutor.
-Be friendly, patient and educational.
-Explain things step by step.
+
+Be friendly, patient, safe, and educational.
+Explain answers step by step.
 Match the student's learning level.
+Do not simply give an answer when teaching would be better.
+
 Subject: ${subject || "General"}
 Student level: ${level || "Beginner"}`,
         input: question
@@ -35,38 +42,39 @@ Student level: ${level || "Beginner"}`,
     });
 
     const data = await response.json();
-console.log("OPENAI DATA:", JSON.stringify(data));
+
+    console.log("OPENAI RESPONSE:", JSON.stringify(data));
+
     if (!response.ok) {
-      console.error("OpenAI error:", data);
+      console.error("OPENAI ERROR:", data);
 
       return res.status(response.status).json({
-        error: data.error?.message || "OpenAI request failed"
+        error: data?.error?.message || "OpenAI request failed"
       });
     }
 
-    let answer = data.output_text;
+    let answer = data?.output_text;
 
-if (!answer && data.output) {
-  answer = data.output
-    .flatMap(item => item.content || [])
-    .filter(item => item.type === "output_text")
-    .map(item => item.text)
-    .join("");
-}
+    if (!answer && Array.isArray(data?.output)) {
+      answer = data.output
+        .flatMap(item => Array.isArray(item.content) ? item.content : [])
+        .filter(item => item.type === "output_text")
+        .map(item => item.text || "")
+        .join("");
+    }
 
-if (!answer) {
-  console.error("NO ANSWER FROM OPENAI:", JSON.stringify(data));
+    if (!answer) {
+      return res.status(500).json({
+        error: "OpenAI returned no answer"
+      });
+    }
 
-  return res.status(500).json({
-    error: "OpenAI returned no answer. Check Vercel logs."
-  });
-}
+    return res.status(200).json({
+      answer: answer
+    });
 
-return res.status(200).json({
-  answer: answer
-});
   } catch (error) {
-    console.error("Server error:", error);
+    console.error("SERVER ERROR:", error);
 
     return res.status(500).json({
       error: error.message || "Server error"
