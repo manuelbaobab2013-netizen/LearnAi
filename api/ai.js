@@ -38,9 +38,17 @@ Keep answers age-appropriate and educational.`,
       });
     }
 
-    return res.status(200).json({
-      answer: data.output_text || "No answer was returned."
-    });
+    // Get text from the Responses API output
+    const answer =
+      data.output_text ||
+      data.output
+        ?.flatMap(item => item.content || [])
+        ?.map(content => content.text)
+        ?.filter(Boolean)
+        ?.join("\n") ||
+      "No answer was returned.";
+
+    return res.status(200).json({ answer });
 
   } catch (error) {
     console.error("SERVER ERROR:", error);
