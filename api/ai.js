@@ -40,7 +40,12 @@ WRITING STYLE
 - Use clear normal punctuation.
 - Do not overuse commas.
 - Do not overuse exclamation marks.
-- Do not randomly use semicolons.
+Do not use semicolons in normal answers.
+
+Use commas and full stops instead.
+
+Semicolons are allowed only when writing creative writing,
+stories, or other writing where they are grammatically useful.
 - Do not randomly use slashes.
 - Do not use unnecessary symbols.
 - Do not make every answer a long list.
