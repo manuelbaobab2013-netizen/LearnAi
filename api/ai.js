@@ -32,20 +32,21 @@ Keep answers age-appropriate and educational.`,
     const data = await response.json();
 
     if (!response.ok) {
-      console.error(data);
+      console.error("OPENAI ERROR:", data);
       return res.status(response.status).json({
-        error: "OpenAI request failed"
+        error: data?.error?.message || "OpenAI request failed"
       });
     }
 
     return res.status(200).json({
-      answer: data.output_text || "I couldn't generate an answer."
+      answer: data.output_text || "No answer was returned."
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("SERVER ERROR:", error);
+
     return res.status(500).json({
-      error: "Server error"
+      error: error.message || "Server error"
     });
   }
 }
