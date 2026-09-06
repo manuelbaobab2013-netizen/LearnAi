@@ -4,94 +4,85 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      question,
-      subject,
-      level,
-      language,
-      history
-    } = req.body || {};
+    const body = req.body || {};
 
-    if (!question || typeof question !== "string") {
+    const question = String(body.question || "").trim();
+    const level = String(body.level || "Beginner");
+    const subject = String(body.subject || "General");
+    const language = String(body.language || "English");
+    const history = Array.isArray(body.history) ? body.history : [];
+
+    if (!question) {
       return res.status(400).json({
         error: "Question is required"
       });
     }
 
     const instructions = `
-You are LearnAI, a smart, natural and friendly AI tutor.
+You are LearnAI, a friendly AI tutor.
 
-Your most important rule is to understand what the student MEANS.
+Your job is to understand the student and answer naturally.
 
-STYLE:
-- Talk naturally, like a helpful intelligent tutor.
-- Do not sound robotic or overly formal.
-- Do not use unnecessary symbols, slashes, semicolons, or repeated punctuation.
+STUDENT:
+Level: ${level}
+Subject: ${subject}
+Language: ${language}
+
+HOW TO TALK:
+- Understand spelling mistakes and messy grammar.
+- Focus on what the student means.
+- Talk naturally, not like a robot.
 - Use normal punctuation.
-- Do not make every answer a long list.
-- Do not repeat the user's question.
-- Do not say "Could you clarify?" when the meaning is already obvious.
-- Understand spelling mistakes, short messages, slang and messy grammar.
-- Keep simple questions simple.
-- Give deeper explanations when the student needs them.
-- If the student says "just pick", "pick one", or "choose one", make one clear choice.
-- If the student asks a comparison, give a clear conclusion when appropriate.
-- Be friendly but do not overuse emojis.
+- Do not randomly use semicolons, slashes, or repeated punctuation.
+- Do not make every answer a huge list.
+- Do not give unnecessarily long answers.
+- For a simple question, give a simple answer.
+- For a difficult question, explain it step by step.
+- Match the student's level.
+- Use words the student can understand.
+- If the student says "just pick", choose one clearly.
+- Do not ask unnecessary follow-up questions.
+- Be friendly and confident.
+- Do not repeat the student's question.
 
-LEVEL:
-Adjust your explanation to the student's level.
-
-Student level: ${level || "Beginner"}
-Subject: ${subject || "General"}
-Language: ${language || "English"}
-
-For younger or beginner students:
-- Use simple words.
-- Explain difficult words.
-- Give small examples.
-- Teach step by step.
-
-For intermediate students:
-- Explain the idea clearly.
-- Use useful examples.
-- Do not explain extremely basic things unless needed.
-
-For advanced students:
-- Be more precise and detailed.
-- Use proper terminology.
-- Do not oversimplify.
+TEACHING:
+- Beginner: simple words and clear examples.
+- Intermediate: clear explanations with useful examples.
+- Advanced: more precise explanations and terminology.
 
 CURRENT INFORMATION:
-- If the question asks about a specific person, player, chess player, team, event, result, record, news story, or anything that may require current information, use web search.
-- Never pretend you searched if you did not.
-- Do not guess when reliable current information can be searched.
-- For current sports, news and recent events, search before answering.
-- When search results are available, use them to answer accurately.
+Use web search when the question needs current or specific information.
+This includes current news, sports, recent events, specific people, players, teams, records and other information that may have changed.
+Never guess current information.
 
 SUBJECTS:
 You can help with mathematics, science, English, history, geography, chess, football, basketball, technology and general knowledge.
 
-IMPORTANT:
-Answer the actual question first.
-Be concise unless more detail is useful.
-If you are unsure, say so instead of inventing information.
+SAFETY:
+Keep answers appropriate for students.
+Do not help with dangerous or illegal activities.
+
+Answer the student's latest question directly.
 `;
 
-    const input =
-      Array.isArray(history) && history.length > 0
-        ? history
-            .filter(
-              message =>
-                message &&
-                message.content &&
-                (message.role === "user" ||
-                  message.role === "assistant")
-            )
-            .map(message => ({
-              role: message.role,
-              content: String(message.content)
-            }))
-        : question;
+    const messages = [];
+
+    for (const item of history.slice(-20)) {
+      if (!item || !item.content) continue;
+
+      const role =
+        item.role === "assistant" ? "assistant" : "user";
+
+      messages.push({
+        role,
+        content: String(item.content)
+      });
+    }
+
+    messages.push({
+      role: "user",
+      content: question
+    });
 
     const response = await fetch(
       "https://api.openai.com/v1/responses",
@@ -104,7 +95,7 @@ If you are unsure, say so instead of inventing information.
         body: JSON.stringify({
           model: "gpt-5.6-luna",
           instructions,
-          input,
+          input: messages,
           tools: [
             {
               type: "web_search"
@@ -119,22 +110,32 @@ If you are unsure, say so instead of inventing information.
     if (!response.ok) {
       console.error("OPENAI ERROR:", data);
 
-      return res.status(response.status).json({
+      return res.status(500).json({
         error:
           data?.error?.message ||
           "OpenAI request failed"
       });
     }
 
+    const answer = data.output_text;
+
+    if (!answer) {
+      console.error("NO OUTPUT:", data);
+
+      return res.status(500).json({
+        error: "The AI returned no answer."
+      });
+    }
+
     return res.status(200).json({
-      answer: data.output_text || "I couldn't generate an answer."
+      answer: answer.trim()
     });
 
   } catch (error) {
     console.error("SERVER ERROR:", error);
 
     return res.status(500).json({
-      error: error.message || "Server error"
+      error: "The AI server encountered an error."
     });
   }
 }
