@@ -1,10 +1,12 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   try {
-    const { question, subject, level } = req.body || {};
+    const { question, subject, level, language } = req.body || {};
 
     if (!question) {
       return res.status(400).json({
@@ -12,11 +14,13 @@ export default async function handler(req, res) {
       });
     }
 
+    // Get the secret from Vercel Environment Variables
     const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
+      console.error("OPENAI_API_KEY is not available.");
       return res.status(500).json({
-        error: "OPENAI_API_KEY is missing in Vercel"
+        error: "OpenAI API key is not connected to this Vercel deployment."
       });
     }
 
@@ -28,28 +32,36 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-5.6-luna",
-        instructions: `You are the LearnAI AI Tutor.
+
+        instructions: `You are LearnAI, an AI tutor.
 
 Be friendly, patient, safe, and educational.
-Explain answers step by step.
+
+Explain things clearly and step by step.
 Match the student's learning level.
-Do not simply give an answer when teaching would be better.
+Use simple explanations when appropriate.
+Do not make up facts.
+If the student asks for school work, help them understand it.
 
 Subject: ${subject || "General"}
-Student level: ${level || "Beginner"}`,
+Learning level: ${level || "Beginner"}
+Language: ${language || "English"}`,
+
         input: question
       })
     });
 
     const data = await response.json();
 
-    console.log("OPENAI RESPONSE:", JSON.stringify(data));
+    console.log("OpenAI status:", response.status);
 
     if (!response.ok) {
-      console.error("OPENAI ERROR:", data);
+      console.error("OpenAI error:", data);
 
       return res.status(response.status).json({
-        error: data?.error?.message || "OpenAI request failed"
+        error:
+          data?.error?.message ||
+          "OpenAI request failed."
       });
     }
 
@@ -57,7 +69,11 @@ Student level: ${level || "Beginner"}`,
 
     if (!answer && Array.isArray(data?.output)) {
       answer = data.output
-        .flatMap(item => Array.isArray(item.content) ? item.content : [])
+        .flatMap(item =>
+          Array.isArray(item.content)
+            ? item.content
+            : []
+        )
         .filter(item => item.type === "output_text")
         .map(item => item.text || "")
         .join("");
@@ -65,19 +81,19 @@ Student level: ${level || "Beginner"}`,
 
     if (!answer) {
       return res.status(500).json({
-        error: "OpenAI returned no answer"
+        error: "OpenAI returned no answer."
       });
     }
 
     return res.status(200).json({
-      answer: answer
+      answer
     });
 
   } catch (error) {
     console.error("SERVER ERROR:", error);
 
     return res.status(500).json({
-      error: error.message || "Server error"
+      error: error.message || "Server error."
     });
   }
 }
