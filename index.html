@@ -750,7 +750,7 @@ body.dark .progress-bar{
   align-items:flex-start
  }
 }
-</style>
+
 /* ===== LEARNAI MODERN GOALS + PROGRESS ===== */
 
 .goal-card {
@@ -761,6 +761,10 @@ body.dark .progress-bar{
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
+
+
+ 
 
 .goal-card:hover {
   transform: translateY(-2px);
@@ -973,6 +977,7 @@ body.dark .progress-bar{
     padding: 12px;
   }
 }
+ </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 </head>
@@ -1059,29 +1064,164 @@ Sign in to continue learning.
 
 <aside class="sidebar">
 
-<div class="logo">LearnAI</div>
+  <div class="logo">LearnAI</div>
 
-<div class="nav">
+  <div class="sidebar-section">
+    <div class="sidebar-title">MAIN</div>
 
-<button class="active" onclick="openPage('home',this)">🏠 Home</button>
-<button onclick="openPage('progress',this)">📈 Progress</button>
-<button onclick="openPage('tutor',this)">🤖 AI Tutor</button>
-<button onclick="openPage('generator',this)">✨ AI Generator</button>
-<button onclick="openPage('worksheets',this)">📄 Worksheets</button>
-<button onclick="openPage('revision',this)">📚 Revision</button>
-<button onclick="openPage('tests',this)">📝 Practice Tests</button>
-<button onclick="openPage('goals',this)">🎯 Goals</button>
-<button onclick="openPage('parent',this)">👨‍👩‍👧 Parent Dashboard</button>
-<button onclick="openPage('premium',this)">💎 Premium</button>
+    <div class="nav">
+      <button class="active" onclick="openPage('home',this)">
+        <span>🏠</span> Home
+      </button>
 
-</div>
+      <button onclick="openPage('progress',this)">
+        <span>📈</span> Progress
+      </button>
 
-<div class="bottom-nav">
+      <button onclick="openPage('tutor',this)">
+        <span>🤖</span> AI Tutor
+      </button>
 
-<button onclick="openPage('conversation',this)">💬 Conversation</button>
-<button onclick="openPage('settings',this)">⚙️ Settings</button>
+      <button onclick="openPage('generator',this)">
+        <span>✨</span> AI Generator
+      </button>
+    </div>
+  </div>
 
-</div>
+  <div class="sidebar-section">
+    <div class="sidebar-title">LEARN</div>
+
+    <div class="nav">
+      <button onclick="openPage('revision',this)">
+        <span>📚</span> Revision
+      </button>
+
+      <button onclick="openPage('tests',this)">
+        <span>📝</span> Practice Tests
+      </button>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-title">GOALS</div>
+
+    <div class="nav">
+      <button onclick="openPage('goals',this)">
+        <span>🎯</span> Goals
+      </button>
+
+      <button onclick="openPage('parent',this)">
+        <span>👨‍👩‍👧</span> Parent Dashboard
+      </button>
+
+      <button onclick="openPage('premium',this)">
+        <span>💎</span> Premium
+      </button>
+
+      <button onclick="openPage('settings',this)">
+        <span>⚙️</span> Settings
+      </button>
+    </div>
+  </div>
+
+  <div class="conversation-box"
+       onclick="openPage('conversation',this)">
+
+    <div class="conversation-icon">💬</div>
+
+    <div>
+      <strong>Conversation</strong>
+      <p>Chat with LearnAI</p>
+    </div>
+
+  </div>
+
+  <div class="logo">LearnAI</div>
+
+  <div class="sidebar-section">
+
+    <div class="sidebar-title">MAIN</div>
+
+    <div class="nav">
+
+      <button class="active" onclick="openPage('home',this)">
+        <span>🏠</span> Home
+      </button>
+
+      <button onclick="openPage('progress',this)">
+        <span>📈</span> Progress
+      </button>
+
+      <button onclick="openPage('tutor',this)">
+        <span>🤖</span> AI Tutor
+      </button>
+
+      <button onclick="openPage('generator',this)">
+        <span>✨</span> AI Generator
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="sidebar-section">
+
+    <div class="sidebar-title">LEARN</div>
+
+    <div class="nav">
+
+      <button onclick="openPage('revision',this)">
+        <span>📚</span> Revision
+      </button>
+
+      <button onclick="openPage('tests',this)">
+        <span>📝</span> Practice Tests
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="sidebar-section">
+
+    <div class="sidebar-title">GOALS</div>
+
+    <div class="nav">
+
+      <button onclick="openPage('goals',this)">
+        <span>🎯</span> Goals
+      </button>
+
+      <button onclick="openPage('parent',this)">
+        <span>👨‍👩‍👧</span> Parent Dashboard
+      </button>
+
+      <button onclick="openPage('premium',this)">
+        <span>💎</span> Premium
+      </button>
+
+      <button onclick="openPage('settings',this)">
+        <span>⚙️</span> Settings
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="conversation-box"
+       onclick="openPage('conversation',this)">
+
+    <div class="conversation-icon">💬</div>
+
+    <div>
+      <strong>Conversation</strong>
+      <p>Chat with LearnAI</p>
+    </div>
+
+  </div>
 
 </aside>
 
