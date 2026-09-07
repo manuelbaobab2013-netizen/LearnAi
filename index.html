@@ -186,7 +186,8 @@ input,select{
 
 .nav button:hover,
 .nav button.active,
-.bottom-nav button:hover{
+.bottom-nav button:hover,
+.bottom-nav button.active{
  background:#2e4381;
  color:white
 }
@@ -400,8 +401,74 @@ input,select{
  border-color:#3157d5
 }
 
+.generator-card.selected{
+ border-color:#3157d5;
+ box-shadow:0 0 0 2px rgba(49,87,213,.12);
+ transform:translateY(-2px)
+}
+
 .generator-card h3{
  margin-bottom:8px
+}
+
+.generator-form{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+ gap:15px;
+ margin-top:20px
+}
+
+.form-group{
+ display:flex;
+ flex-direction:column;
+ gap:7px
+}
+
+.form-group label{
+ font-weight:bold;
+ font-size:14px
+}
+
+.form-group input,
+.form-group select{
+ width:100%;
+ padding:12px;
+ border:1px solid #d7ddea;
+ border-radius:10px;
+ outline:none;
+ background:white
+}
+
+.form-group input:focus,
+.form-group select:focus{
+ border-color:#3157d5
+}
+
+.generator-actions{
+ margin-top:20px;
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap
+}
+
+.generated-output{
+ margin-top:22px;
+ line-height:1.6
+}
+
+.generated-output pre{
+ white-space:pre-wrap;
+ word-wrap:break-word;
+ font:inherit;
+ line-height:1.6
+}
+
+.loading{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ color:#3157d5;
+ font-weight:bold
 }
 
 /* SETTINGS */
@@ -511,7 +578,9 @@ body.dark .chat{
 
 body.dark .input,
 body.dark .chat-input input,
-body.dark select{
+body.dark select,
+body.dark .form-group input,
+body.dark .form-group select{
  background:#111827;
  color:white;
  border-color:#34405a
@@ -523,6 +592,10 @@ body.dark .muted{
 
 body.dark .about h2{
  color:white
+}
+
+body.dark .generated-output .message{
+ background:#111827
 }
 
 /* MOBILE */
@@ -572,6 +645,7 @@ body.dark .about h2{
  .chat-input{
   flex-direction:column
  }
+
 }
 </style>
 </head>
@@ -1092,7 +1166,7 @@ Send
 </section>
 
 
-<!-- GENERATOR -->
+<!-- AI GENERATOR -->
 
 <section class="page" id="generator">
 
@@ -1104,15 +1178,17 @@ AI Generator
  class="muted"
  style="margin:8px 0 22px"
 >
-Create learning materials for your subjects.
+Create worksheets, exams, quizzes, classwork and homework with LearnAI AI.
 </p>
 
 
 <div class="generator-grid">
 
+
 <div
  class="generator-card"
- onclick="generate('Worksheet')"
+ data-type="Worksheet"
+ onclick="selectGenerator('Worksheet',this)"
 >
 
 <h3>
@@ -1120,7 +1196,7 @@ Create learning materials for your subjects.
 </h3>
 
 <p class="muted">
-Create practice worksheets.
+Create practice worksheets for any subject.
 </p>
 
 </div>
@@ -1128,15 +1204,16 @@ Create practice worksheets.
 
 <div
  class="generator-card"
- onclick="generate('Revision Notes')"
+ data-type="Exam"
+ onclick="selectGenerator('Exam',this)"
 >
 
 <h3>
-📚 Revision Notes
+📝 Exam
 </h3>
 
 <p class="muted">
-Create clear study notes.
+Create a complete exam with questions and marks.
 </p>
 
 </div>
@@ -1144,15 +1221,16 @@ Create clear study notes.
 
 <div
  class="generator-card"
- onclick="generate('Practice Test')"
+ data-type="Quiz"
+ onclick="selectGenerator('Quiz',this)"
 >
 
 <h3>
-📝 Practice Test
+🧠 Quiz
 </h3>
 
 <p class="muted">
-Test your knowledge.
+Create a quick quiz to test knowledge.
 </p>
 
 </div>
@@ -1160,15 +1238,16 @@ Test your knowledge.
 
 <div
  class="generator-card"
- onclick="generate('Quiz')"
+ data-type="Classwork"
+ onclick="selectGenerator('Classwork',this)"
 >
 
 <h3>
-❓ Quiz
+🏫 Classwork
 </h3>
 
 <p class="muted">
-Generate quick quizzes.
+Create activities for classroom learning.
 </p>
 
 </div>
@@ -1176,75 +1255,151 @@ Generate quick quizzes.
 
 <div
  class="generator-card"
- onclick="generate('Flashcards')"
+ data-type="Homework"
+ onclick="selectGenerator('Homework',this)"
 >
 
 <h3>
-🗂️ Flashcards
+🏠 Homework
 </h3>
 
 <p class="muted">
-Create flashcards.
+Create homework students can complete at home.
 </p>
 
 </div>
 
 
-<div
- class="generator-card"
- onclick="generate('Study Plan')"
->
-
-<h3>
-📅 Study Plan
-</h3>
-
-<p class="muted">
-Build a study plan.
-</p>
-
 </div>
 
 
-<div
- class="generator-card"
- onclick="generate('Practice Questions')"
->
-
-<h3>
-✏️ Practice Questions
-</h3>
-
-<p class="muted">
-Generate questions.
-</p>
-
-</div>
-
-
-<div
- class="generator-card"
- onclick="generate('Learning Activity')"
->
-
-<h3>
-🧠 Learning Activity
-</h3>
-
-<p class="muted">
-Create another learning activity.
-</p>
-
-</div>
-
-</div>
-
+<!-- GENERATOR FORM -->
 
 <div
  class="card"
+ id="generatorForm"
+ style="display:none;margin-top:22px"
+>
+
+<h2 id="generatorTitle">
+Create Material
+</h2>
+
+<p
+ class="muted"
+ style="margin:8px 0 20px"
+>
+Choose the subject, topic, number of questions and difficulty.
+</p>
+
+
+<div class="generator-form">
+
+
+<div class="form-group">
+
+<label for="generatorSubject">
+Subject
+</label>
+
+<select id="generatorSubject">
+
+<option>Maths</option>
+<option>English</option>
+<option>Science</option>
+<option>History</option>
+<option>Geography</option>
+<option>Computer Science</option>
+<option>Biology</option>
+<option>Physics</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label for="generatorTopic">
+Topic
+</label>
+
+<input
+ id="generatorTopic"
+ placeholder="Example: Fractions"
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label for="generatorQuestions">
+Number of Questions
+</label>
+
+<select id="generatorQuestions">
+
+<option value="5">5</option>
+<option value="10">10</option>
+<option value="15">15</option>
+<option value="20">20</option>
+<option value="30">30</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label for="generatorDifficulty">
+Difficulty
+</label>
+
+<select id="generatorDifficulty">
+
+<option>Beginner</option>
+<option>Intermediate</option>
+<option>Advanced</option>
+
+</select>
+
+</div>
+
+
+</div>
+
+
+<div class="generator-actions">
+
+<button
+ class="primary-btn"
+ onclick="createGeneratedMaterial()"
+>
+✨ Generate with AI
+</button>
+
+<button
+ class="secondary-btn"
+ onclick="clearGenerator()"
+>
+Clear
+</button>
+
+</div>
+
+</div>
+
+
+<!-- GENERATED RESULT -->
+
+<div
+ class="card generated-output"
  id="generatedContent"
- style="margin-top:22px;display:none"
+ style="display:none"
 ></div>
+
 
 </section>
 
@@ -1263,7 +1418,7 @@ Worksheets
 >
 
 <h2>
-No worksheets yet
+Create a Worksheet
 </h2>
 
 <p
@@ -1275,7 +1430,7 @@ Use AI Generator to create your first worksheet.
 
 <button
  class="primary-btn"
- onclick="openPage('generator')"
+ onclick="openGeneratorFor('Worksheet')"
 >
 Create Worksheet
 </button>
@@ -1364,14 +1519,22 @@ Ready to test yourself?
  class="muted"
  style="margin:10px 0 18px"
 >
-Generate a practice test and record your real score.
+Generate an exam or quiz and test your knowledge.
 </p>
 
 <button
  class="primary-btn"
- onclick="generate('Practice Test')"
+ onclick="openGeneratorFor('Exam')"
 >
-Generate Test
+Generate Exam
+</button>
+
+<button
+ class="secondary-btn"
+ onclick="openGeneratorFor('Quiz')"
+ style="margin-left:8px"
+>
+Generate Quiz
 </button>
 
 </div>
@@ -1779,6 +1942,8 @@ let isSignup = false;
 
 let currentSubject = "General";
 
+let generatorType = "Worksheet";
+
 let learningData = {
  activities: 0,
  minutes: 0,
@@ -1904,7 +2069,9 @@ function openPage(pageId,button){
 
 
  if(page){
+
   page.classList.add("active");
+
  }
 
 
@@ -1918,7 +2085,9 @@ function openPage(pageId,button){
 
 
  if(button){
+
   button.classList.add("active");
+
  }
 
 }
@@ -1968,17 +2137,15 @@ async function sendMessage(){
 
 
  if(!question){
+
   return;
+
  }
 
 
  const chat =
  document.getElementById("chat");
 
-
- /*
-   Add the user's message first.
- */
 
  chat.innerHTML += `
 
@@ -1992,19 +2159,10 @@ async function sendMessage(){
  input.value = "";
 
 
- /*
-   Collect the existing conversation.
-
-   This allows the backend to understand:
-   "why?"
-   "what about him?"
-   "explain that"
-   "what did you mean?"
-   etc.
- */
-
  const history = [
+
   ...chat.querySelectorAll(".message")
+
  ].map(message => ({
 
   role:
@@ -2017,10 +2175,6 @@ async function sendMessage(){
 
  }));
 
-
- /*
-   Show thinking indicator.
- */
 
  const thinking =
  document.createElement("div");
@@ -2051,13 +2205,6 @@ async function sendMessage(){
    document.getElementById("language").value;
 
 
-  /*
-    IMPORTANT:
-
-    Instructions are NOT placed inside fetch().
-    The backend controls the actual AI instructions.
-  */
-
   const response =
    await fetch("/api/ai",{
 
@@ -2069,15 +2216,15 @@ async function sendMessage(){
 
     body:JSON.stringify({
 
-     question: question,
+     question:question,
 
-     subject: currentSubject,
+     subject:currentSubject,
 
-     level: level,
+     level:level,
 
-     language: language,
+     language:language,
 
-     history: history
+     history:history
 
     })
 
@@ -2181,60 +2328,350 @@ function newChat(){
    AI GENERATOR
    ========================================================= */
 
-function generate(type){
+function selectGenerator(type,card){
+
+ generatorType = type;
+
+
+ document.querySelectorAll(".generator-card").forEach(item=>{
+
+  item.classList.remove("selected");
+
+ });
+
+
+ if(card){
+
+  card.classList.add("selected");
+
+ }else{
+
+  const matching =
+   document.querySelector(
+    `.generator-card[data-type="${type}"]`
+   );
+
+
+  if(matching){
+
+   matching.classList.add("selected");
+
+  }
+
+ }
+
+
+ const form =
+  document.getElementById("generatorForm");
+
+
+ form.style.display =
+  "block";
+
+
+ document.getElementById("generatorTitle").textContent =
+  "Create " + type;
+
+
+ form.scrollIntoView({
+
+  behavior:"smooth",
+
+  block:"start"
+
+ });
+
+}
+
+
+/* =========================================================
+   OPEN GENERATOR FROM OTHER PAGES
+   ========================================================= */
+
+function openGeneratorFor(type){
+
+ openPage("generator");
+
+ selectGenerator(type);
+
+}
+
+
+/* =========================================================
+   CLEAR GENERATOR
+   ========================================================= */
+
+function clearGenerator(){
+
+ document.getElementById("generatorTopic").value = "";
+
+ document.getElementById("generatedContent").style.display =
+  "none";
+
+}
+
+
+/* =========================================================
+   CREATE AI MATERIAL
+   ========================================================= */
+
+async function createGeneratedMaterial(){
+
+ const subject =
+  document.getElementById("generatorSubject").value;
+
+
+ const topic =
+  document.getElementById("generatorTopic").value.trim();
+
+
+ const questionCount =
+  document.getElementById("generatorQuestions").value;
+
+
+ const difficulty =
+  document.getElementById("generatorDifficulty").value;
+
+
+ const language =
+  document.getElementById("language").value;
+
 
  const box =
- document.getElementById("generatedContent");
+  document.getElementById("generatedContent");
+
+
+ if(!topic){
+
+  alert("Please enter a topic first.");
+
+  document.getElementById("generatorTopic").focus();
+
+  return;
+
+ }
 
 
  box.style.display =
- "block";
+  "block";
 
 
  box.innerHTML = `
 
- <h2>
- ${escapeHTML(type)}
- </h2>
+ <div class="loading">
 
+ <span>✨</span>
+
+ <span>
+ Creating your ${escapeHTML(generatorType)}...
+ </span>
+
+ </div>
 
  <p
  class="muted"
- style="margin:10px 0 15px"
+ style="margin-top:10px"
  >
- Your ${escapeHTML(type.toLowerCase())}
- will be generated by LearnAI AI.
+ LearnAI AI is preparing your material.
  </p>
-
-
- <p>
- <strong>Subject:</strong>
- ${escapeHTML(currentSubject)}
- </p>
-
-
- <p style="margin-top:10px">
-
- <strong>Level:</strong>
-
- ${escapeHTML(
-  document.getElementById("level").value
- )}
-
- </p>
-
-
- <button
- class="primary-btn"
- style="margin-top:18px"
- onclick="completeActivity()"
- >
-
- Mark Activity Complete
-
- </button>
 
  `;
+
+
+ box.scrollIntoView({
+
+  behavior:"smooth",
+
+  block:"start"
+
+ });
+
+
+ const prompt = `
+
+Create a ${generatorType} for a student.
+
+SUBJECT:
+${subject}
+
+TOPIC:
+${topic}
+
+DIFFICULTY:
+${difficulty}
+
+NUMBER OF QUESTIONS:
+${questionCount}
+
+LANGUAGE:
+${language}
+
+IMPORTANT INSTRUCTIONS:
+
+1. Make the material clear and educational.
+2. Make it appropriate for the student's learning level.
+3. Number every question clearly.
+4. Do not make up information when accuracy matters.
+5. Keep the formatting easy to read.
+6. Do not include dangerous or inappropriate content.
+
+If this is a WORKSHEET:
+Create practice questions and activities.
+Include enough space or instructions for the student to answer.
+
+If this is an EXAM:
+Create a proper exam.
+Include clear sections where useful.
+Include marks for questions.
+Include the total marks.
+Do NOT reveal the answers immediately.
+
+If this is a QUIZ:
+Create concise questions.
+Use a mixture of question types when appropriate.
+Do NOT reveal the answers immediately.
+
+If this is CLASSWORK:
+Create activities suitable for completing during a lesson.
+Include clear instructions.
+
+If this is HOMEWORK:
+Create useful practice activities that can be completed at home.
+Include clear instructions.
+
+Return only the finished ${generatorType}.
+`;
+
+
+ try{
+
+  const response =
+   await fetch("/api/ai",{
+
+    method:"POST",
+
+    headers:{
+     "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+     question:prompt,
+
+     subject:subject,
+
+     level:difficulty,
+
+     language:language,
+
+     history:[]
+
+    })
+
+   });
+
+
+  const data =
+   await response.json();
+
+
+  if(!response.ok){
+
+   throw new Error(
+
+    data.error ||
+    "AI generator unavailable"
+
+   );
+
+  }
+
+
+  const answer =
+   data.answer ||
+   "No material was generated.";
+
+
+  box.innerHTML = `
+
+  <h2>
+  ✨ ${escapeHTML(generatorType)}
+  </h2>
+
+
+  <p
+   class="muted"
+   style="margin:8px 0 20px"
+  >
+
+  ${escapeHTML(subject)}
+  •
+  ${escapeHTML(topic)}
+  •
+  ${escapeHTML(difficulty)}
+
+  </p>
+
+
+  <div
+   class="message ai"
+   style="max-width:100%"
+  >
+
+   <pre>
+${escapeHTML(answer)}
+   </pre>
+
+  </div>
+
+
+  <div style="margin-top:15px">
+
+   <button
+    class="primary-btn"
+    onclick="completeActivity()"
+   >
+    ✓ Mark Activity Complete
+   </button>
+
+  </div>
+
+  `;
+
+
+ }catch(error){
+
+  console.error(error);
+
+
+  box.innerHTML = `
+
+  <h2>
+  ⚠️ Generator Error
+  </h2>
+
+
+  <p
+   class="muted"
+   style="margin-top:10px"
+  >
+
+  ${escapeHTML(error.message)}
+
+  </p>
+
+
+  <button
+   class="primary-btn"
+   onclick="createGeneratedMaterial()"
+   style="margin-top:15px"
+  >
+  Try Again
+  </button>
+
+  `;
+
+ }
 
 }
 
@@ -2251,6 +2688,7 @@ function completeActivity(){
 
  updateProgress();
 
+
  alert(
   "Activity completed! Your progress has been updated."
  );
@@ -2261,59 +2699,59 @@ function completeActivity(){
 function updateProgress(){
 
  document.getElementById("activities").textContent =
- learningData.activities;
+  learningData.activities;
 
 
  document.getElementById("progressActivities").textContent =
- learningData.activities;
+  learningData.activities;
 
 
  document.getElementById("minutes").textContent =
- learningData.minutes;
+  learningData.minutes;
 
 
  document.getElementById("progressMinutes").textContent =
- learningData.minutes;
+  learningData.minutes;
 
 
  const average =
 
- learningData.scores.length
-
- ? Math.round(
-
-  learningData.scores.reduce(
-   (a,b)=>a+b,
-   0
-  )
-  /
   learningData.scores.length
 
- )
+  ? Math.round(
 
- : null;
+   learningData.scores.reduce(
+    (a,b)=>a+b,
+    0
+   )
+   /
+   learningData.scores.length
+
+  )
+
+  : null;
 
 
  document.getElementById("score").textContent =
 
- average === null
- ? "—"
- : average + "%";
+  average === null
+  ? "—"
+  : average + "%";
 
 
  document.getElementById("bestScore").textContent =
 
- learningData.scores.length
+  learningData.scores.length
 
- ? Math.max(
-   ...learningData.scores
-  ) + "%"
+  ? Math.max(
+    ...learningData.scores
+   ) + "%"
 
- : "—";
+  : "—";
 
 
  document.getElementById("streak").textContent =
- learningData.streak;
+  learningData.streak;
 
 }
 
@@ -2339,11 +2777,11 @@ function toggleDarkMode(checkbox){
 function escapeHTML(text){
 
  const div =
- document.createElement("div");
+  document.createElement("div");
 
 
  div.textContent =
- String(text);
+  String(text);
 
 
  return div.innerHTML;
