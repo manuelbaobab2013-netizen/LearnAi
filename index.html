@@ -1,3 +1,4 @@
+````html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,8 +28,6 @@ button{
 input,select{
  font:inherit
 }
-
-/* LANDING */
 
 .gate{
  min-height:100vh;
@@ -89,8 +88,6 @@ input,select{
  font-weight:bold
 }
 
-/* AUTH */
-
 .auth{
  display:none;
  min-height:100vh;
@@ -142,8 +139,6 @@ input,select{
  cursor:pointer
 }
 
-/* APP */
-
 .app{
  display:none;
  min-height:100vh
@@ -160,7 +155,8 @@ input,select{
  padding:25px 15px;
  display:flex;
  flex-direction:column;
- z-index:10
+ z-index:10;
+ overflow-y:auto
 }
 
 .logo{
@@ -209,7 +205,10 @@ input,select{
  align-items:center;
  justify-content:flex-end;
  gap:18px;
- padding:0 28px
+ padding:0 28px;
+ position:sticky;
+ top:0;
+ z-index:5
 }
 
 .status{
@@ -233,7 +232,7 @@ input,select{
 
 .content{
  padding:30px;
- max-width:1300px;
+ max-width:1400px;
  margin:auto
 }
 
@@ -244,8 +243,6 @@ input,select{
 .page.active{
  display:block
 }
-
-/* HOME */
 
 .welcome{
  background:linear-gradient(135deg,#3157d5,#657df0);
@@ -274,7 +271,8 @@ input,select{
  background:white;
  border-radius:17px;
  padding:22px;
- box-shadow:0 5px 22px rgba(30,50,100,.07)
+ box-shadow:0 5px 22px rgba(30,50,100,.07);
+ margin-bottom:18px
 }
 
 .card h3{
@@ -292,7 +290,21 @@ input,select{
  font-size:14px
 }
 
-/* AI TUTOR */
+.progress-bar{
+ width:100%;
+ height:12px;
+ background:#e8ecf5;
+ border-radius:20px;
+ overflow:hidden;
+ margin-top:12px
+}
+
+.progress-fill{
+ height:100%;
+ background:#3157d5;
+ width:0%;
+ transition:.4s
+}
 
 .tutor-box{
  background:white;
@@ -378,8 +390,6 @@ input,select{
 .chat-input input:focus{
  border-color:#3157d5
 }
-
-/* GENERATOR */
 
 .generator-grid{
  display:grid;
@@ -471,7 +481,78 @@ input,select{
  font-weight:bold
 }
 
-/* SETTINGS */
+.quiz-options{
+ display:grid;
+ gap:10px;
+ margin-top:15px
+}
+
+.quiz-option{
+ padding:13px;
+ background:#f1f4ff;
+ border-radius:10px;
+ border:1px solid #dfe5f4;
+ text-align:left
+}
+
+.quiz-option:hover{
+ border-color:#3157d5
+}
+
+.quiz-option.correct{
+ background:#dff7e9;
+ border-color:#26a66a
+}
+
+.quiz-option.wrong{
+ background:#ffe3e3;
+ border-color:#d9534f
+}
+
+.goal-item,
+.history-item,
+.parent-item{
+ background:white;
+ border-radius:14px;
+ padding:18px;
+ margin-bottom:12px;
+ border:1px solid #e4e8f2
+}
+
+.goal-top{
+ display:flex;
+ justify-content:space-between;
+ gap:10px;
+ align-items:center
+}
+
+.goal-actions{
+ margin-top:12px;
+ display:flex;
+ gap:8px;
+ flex-wrap:wrap
+}
+
+.history-item{
+ cursor:pointer
+}
+
+.history-item:hover{
+ border-color:#3157d5
+}
+
+.small-btn{
+ padding:9px 13px;
+ border-radius:8px;
+ background:#e9edff;
+ color:#3157d5;
+ font-weight:bold
+}
+
+.danger-btn{
+ background:#ffe5e5;
+ color:#c0392b
+}
 
 .setting{
  background:white;
@@ -489,8 +570,6 @@ select{
  border:1px solid #d7ddea;
  border-radius:8px
 }
-
-/* PREMIUM */
 
 .premium-grid{
  display:grid;
@@ -554,7 +633,17 @@ select{
  color:#6e5a20
 }
 
-/* DARK MODE */
+.parent-lock{
+ max-width:500px;
+ margin:25px auto
+}
+
+.parent-stat{
+ display:flex;
+ justify-content:space-between;
+ padding:13px 0;
+ border-bottom:1px solid #e5e9f3
+}
 
 body.dark{
  background:#101625;
@@ -567,7 +656,10 @@ body.dark .auth-card,
 body.dark .plan,
 body.dark .generator-card,
 body.dark .setting,
-body.dark .topbar{
+body.dark .topbar,
+body.dark .goal-item,
+body.dark .history-item,
+body.dark .parent-item{
  background:#182033;
  color:#f5f7ff
 }
@@ -598,7 +690,14 @@ body.dark .generated-output .message{
  background:#111827
 }
 
-/* MOBILE */
+body.dark .quiz-option{
+ background:#111827;
+ border-color:#34405a
+}
+
+body.dark .progress-bar{
+ background:#30394d
+}
 
 @media(max-width:800px){
 
@@ -646,13 +745,15 @@ body.dark .generated-output .message{
   flex-direction:column
  }
 
+ .goal-top{
+  flex-direction:column;
+  align-items:flex-start
+ }
 }
 </style>
 </head>
 
 <body>
-
-<!-- LANDING -->
 
 <section class="gate" id="gate">
 
@@ -681,8 +782,6 @@ GET STARTED
 
 </section>
 
-
-<!-- AUTH -->
 
 <section class="auth" id="auth">
 
@@ -720,88 +819,43 @@ Sign in to continue learning.
  style="width:100%"
  onclick="login()"
 >
-
-<span id="authButton">
-Log In
-</span>
-
+<span id="authButton">Log In</span>
 </button>
 
 <div class="auth-switch">
-
-<span id="switchText">
-Don't have an account?
-</span>
-
-<span
- onclick="toggleAuth()"
- id="switchButton"
->
-Sign Up
-</span>
-
+<span id="switchText">Don't have an account?</span>
+<span onclick="toggleAuth()" id="switchButton">Sign Up</span>
 </div>
 
 </div>
-
 </section>
 
-
-<!-- APP -->
 
 <section class="app" id="app">
 
 <aside class="sidebar">
 
-<div class="logo">
-LearnAI
-</div>
+<div class="logo">LearnAI</div>
 
 <div class="nav">
 
-<button class="active" onclick="openPage('home',this)">
-🏠 Home
-</button>
-
-<button onclick="openPage('progress',this)">
-📈 Progress
-</button>
-
-<button onclick="openPage('tutor',this)">
-🤖 AI Tutor
-</button>
-
-<button onclick="openPage('generator',this)">
-✨ AI Generator
-</button>
-
-<button onclick="openPage('worksheets',this)">
-📄 Worksheets
-</button>
-
-<button onclick="openPage('revision',this)">
-📚 Revision
-</button>
-
-<button onclick="openPage('tests',this)">
-📝 Practice Tests
-</button>
-
-<button onclick="openPage('premium',this)">
-💎 Premium
-</button>
+<button class="active" onclick="openPage('home',this)">🏠 Home</button>
+<button onclick="openPage('progress',this)">📈 Progress</button>
+<button onclick="openPage('tutor',this)">🤖 AI Tutor</button>
+<button onclick="openPage('generator',this)">✨ AI Generator</button>
+<button onclick="openPage('worksheets',this)">📄 Worksheets</button>
+<button onclick="openPage('revision',this)">📚 Revision</button>
+<button onclick="openPage('tests',this)">📝 Practice Tests</button>
+<button onclick="openPage('goals',this)">🎯 Goals</button>
+<button onclick="openPage('parent',this)">👨‍👩‍👧 Parent Dashboard</button>
+<button onclick="openPage('premium',this)">💎 Premium</button>
 
 </div>
 
 <div class="bottom-nav">
 
-<button onclick="openPage('conversation',this)">
-💬 Conversation
-</button>
-
-<button onclick="openPage('settings',this)">
-⚙️ Settings
-</button>
+<button onclick="openPage('conversation',this)">💬 Conversation</button>
+<button onclick="openPage('settings',this)">⚙️ Settings</button>
 
 </div>
 
@@ -827,15 +881,11 @@ Student
 <div class="content">
 
 
-<!-- HOME -->
-
 <section class="page active" id="home">
 
 <div class="welcome">
 
-<h1>
-Welcome to LearnAI 👋
-</h1>
+<h1>Welcome to LearnAI 👋</h1>
 
 <p>
 Learn → Practice → Test → Progress → Improve
@@ -843,96 +893,75 @@ Learn → Practice → Test → Progress → Improve
 
 </div>
 
+<div class="cards">
+
+<div class="card">
+<h3>Activities Completed</h3>
+<div class="number" id="activities">0</div>
+<div class="muted">Real completed activities</div>
+</div>
+
+<div class="card">
+<h3>Average Score</h3>
+<div class="number" id="score">—</div>
+<div class="muted">Completed tests</div>
+</div>
+
+<div class="card">
+<h3>Study Time</h3>
+<div class="number" id="minutes">0</div>
+<div class="muted">Minutes recorded</div>
+</div>
+
+<div class="card">
+<h3>Streak</h3>
+<div class="number" id="streak">0</div>
+<div class="muted">Learning days</div>
+</div>
+
+</div>
 
 <div class="cards">
 
 <div class="card">
 
-<h3>
-Activities Completed
-</h3>
+<h3>Goal Progress</h3>
 
-<div class="number" id="activities">
+<div class="number" id="goalPercent">
+0%
+</div>
+
+<div class="progress-bar">
+<div class="progress-fill" id="goalProgressBar"></div>
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Quiz Attempts</h3>
+
+<div class="number" id="quizAttempts">
 0
 </div>
 
 <div class="muted">
-Real completed activities
+Practice tests completed
 </div>
 
 </div>
 
+</div>
 
 <div class="card">
 
-<h3>
-Average Score
-</h3>
+<h2>Start Learning</h2>
 
-<div class="number" id="score">
-—
-</div>
-
-<div class="muted">
-Completed tests
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h3>
-Study Time
-</h3>
-
-<div class="number" id="minutes">
-0
-</div>
-
-<div class="muted">
-Minutes recorded
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h3>
-Streak
-</h3>
-
-<div class="number" id="streak">
-0
-</div>
-
-<div class="muted">
-Learning days
-</div>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-Start Learning
-</h2>
-
-<p
- class="muted"
- style="margin:10px 0 18px"
->
+<p class="muted" style="margin:10px 0 18px">
 Choose AI Tutor to start learning.
 </p>
 
-<button
- class="primary-btn"
- onclick="openPage('tutor')"
->
+<button class="primary-btn" onclick="openPage('tutor')">
 Open AI Tutor
 </button>
 
@@ -941,207 +970,110 @@ Open AI Tutor
 </section>
 
 
-<!-- PROGRESS -->
-
 <section class="page" id="progress">
 
-<h1>
-Progress
-</h1>
+<h1>Progress</h1>
 
-<p
- class="muted"
- style="margin:8px 0 22px"
->
-Your progress is based only on activities you actually complete.
+<p class="muted" style="margin:8px 0 22px">
+Your progress is based only on activities and tests you actually complete.
 </p>
-
 
 <div class="cards">
 
 <div class="card">
+<h3>Completed</h3>
+<div class="number" id="progressActivities">0</div>
+</div>
 
-<h3>
-Completed
-</h3>
+<div class="card">
+<h3>Study Minutes</h3>
+<div class="number" id="progressMinutes">0</div>
+</div>
 
-<div
- class="number"
- id="progressActivities"
->
-0
+<div class="card">
+<h3>Best Score</h3>
+<div class="number" id="bestScore">—</div>
+</div>
+
+<div class="card">
+<h3>Quiz Attempts</h3>
+<div class="number" id="progressQuizAttempts">0</div>
 </div>
 
 </div>
-
 
 <div class="card">
 
-<h3>
-Study Minutes
-</h3>
+<h2>Overall Goal Progress</h2>
 
-<div
- class="number"
- id="progressMinutes"
->
-0
+<div class="number" id="progressGoalPercent">
+0%
 </div>
 
+<div class="progress-bar">
+<div class="progress-fill" id="progressGoalBar"></div>
 </div>
 
-
-<div class="card">
-
-<h3>
-Best Score
-</h3>
-
-<div
- class="number"
- id="bestScore"
->
-—
-</div>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-Learning Areas
-</h2>
-
-<p
- class="muted"
- style="margin-top:10px"
->
-Complete lessons, worksheets and tests to build your real progress record.
+<p class="muted" style="margin-top:10px" id="goalSummary">
+Create a goal to start tracking it.
 </p>
+
+</div>
+
+<div class="card">
+
+<h2>Learning Areas</h2>
+
+<div id="subjectProgress"></div>
 
 </div>
 
 </section>
 
 
-<!-- AI TUTOR -->
-
 <section class="page" id="tutor">
 
-<h1>
-AI Tutor
-</h1>
+<h1>AI Tutor</h1>
 
-<p
- class="muted"
- style="margin:8px 0 20px"
->
+<p class="muted" style="margin:8px 0 20px">
 Ask questions and get explanations matched to your learning level.
 </p>
 
-
 <div class="tutor-box">
 
-<div class="robot">
-🤖
-</div>
+<div class="robot">🤖</div>
 
-<h2>
-Choose a subject
-</h2>
-
+<h2>Choose a subject</h2>
 
 <div class="subjects">
 
-<button
- class="subject"
- onclick="chooseSubject('Maths')"
->
-Maths
-</button>
-
-<button
- class="subject"
- onclick="chooseSubject('English')"
->
-English
-</button>
-
-<button
- class="subject"
- onclick="chooseSubject('Science')"
->
-Science
-</button>
-
-<button
- class="subject"
- onclick="chooseSubject('History')"
->
-History
-</button>
-
-<button
- class="subject"
- onclick="chooseSubject('Geography')"
->
-Geography
-</button>
-
-<button
- class="subject"
- onclick="chooseSubject('Computer Science')"
->
-Computer Science
-</button>
-
-<button
- class="subject"
- onclick="chooseSubject('Biology')"
->
-Biology
-</button>
-
-<button
- class="subject"
- onclick="chooseSubject('Physics')"
->
-Physics
-</button>
+<button class="subject" onclick="chooseSubject('Maths')">Maths</button>
+<button class="subject" onclick="chooseSubject('English')">English</button>
+<button class="subject" onclick="chooseSubject('Science')">Science</button>
+<button class="subject" onclick="chooseSubject('History')">History</button>
+<button class="subject" onclick="chooseSubject('Geography')">Geography</button>
+<button class="subject" onclick="chooseSubject('Computer Science')">Computer Science</button>
+<button class="subject" onclick="chooseSubject('Biology')">Biology</button>
+<button class="subject" onclick="chooseSubject('Physics')">Physics</button>
 
 </div>
 
-
-<button
- class="primary-btn"
- onclick="newChat()"
- style="margin-bottom:15px"
->
+<button class="primary-btn" onclick="newChat()" style="margin-bottom:15px">
 + New Chat
 </button>
-
 
 <div class="chat" id="chat">
 
 <div class="message ai">
-
 Hi! I'm your LearnAI Tutor. 🤖
 
 Choose a subject and ask me a question.
 
 I can help with school subjects, chess, football,
 basketball, technology, general knowledge and much more.
-
-For current information, LearnAI can use online search
-when web search is enabled on the AI backend.
-
 </div>
 
 </div>
-
 
 <div class="chat-input">
 
@@ -1161,10 +1093,7 @@ when web search is enabled on the AI backend.
 🎤
 </button>
 
-<button
- class="primary-btn"
- onclick="sendMessage()"
->
+<button class="primary-btn" onclick="sendMessage()">
 Send
 </button>
 
@@ -1175,144 +1104,74 @@ Send
 </section>
 
 
-<!-- AI GENERATOR -->
-
 <section class="page" id="generator">
 
-<h1>
-AI Generator
-</h1>
+<h1>AI Generator</h1>
 
-<p
- class="muted"
- style="margin:8px 0 22px"
->
+<p class="muted" style="margin:8px 0 22px">
 Create worksheets, exams, quizzes, classwork and homework with LearnAI AI.
 </p>
 
-
 <div class="generator-grid">
 
+<div class="generator-card" data-type="Worksheet" onclick="selectGenerator('Worksheet',this)">
+<h3>📄 Worksheet</h3>
+<p class="muted">Create practice worksheets for any subject.</p>
+</div>
 
-<div
- class="generator-card"
- data-type="Worksheet"
- onclick="selectGenerator('Worksheet',this)"
->
+<div class="generator-card" data-type="Exam" onclick="selectGenerator('Exam',this)">
+<h3>📝 Exam</h3>
+<p class="muted">Create a complete exam with questions and marks.</p>
+</div>
 
-<h3>
-📄 Worksheet
-</h3>
+<div class="generator-card" data-type="Quiz" onclick="selectGenerator('Quiz',this)">
+<h3>🧠 Quiz</h3>
+<p class="muted">Create a quick quiz to test knowledge.</p>
+</div>
 
-<p class="muted">
-Create practice worksheets for any subject.
-</p>
+<div class="generator-card" data-type="Classwork" onclick="selectGenerator('Classwork',this)">
+<h3>🏫 Classwork</h3>
+<p class="muted">Create activities for classroom learning.</p>
+</div>
+
+<div class="generator-card" data-type="Homework" onclick="selectGenerator('Homework',this)">
+<h3>🏠 Homework</h3>
+<p class="muted">Create homework students can complete at home.</p>
+</div>
 
 </div>
 
+<div class="card" id="generatorForm" style="display:none;margin-top:22px">
 
-<div
- class="generator-card"
- data-type="Exam"
- onclick="selectGenerator('Exam',this)"
->
+<h2 id="generatorTitle">Create Material</h2>
 
-<h3>
-📝 Exam
-</h3>
-
-<p class="muted">
-Create a complete exam with questions and marks.
+<p class="muted" style="margin:8px 0 20px">
+Choose the grade, subject, topic, number of questions and difficulty.
 </p>
-
-</div>
-
-
-<div
- class="generator-card"
- data-type="Quiz"
- onclick="selectGenerator('Quiz',this)"
->
-
-<h3>
-🧠 Quiz
-</h3>
-
-<p class="muted">
-Create a quick quiz to test knowledge.
-</p>
-
-</div>
-
-
-<div
- class="generator-card"
- data-type="Classwork"
- onclick="selectGenerator('Classwork',this)"
->
-
-<h3>
-🏫 Classwork
-</h3>
-
-<p class="muted">
-Create activities for classroom learning.
-</p>
-
-</div>
-
-
-<div
- class="generator-card"
- data-type="Homework"
- onclick="selectGenerator('Homework',this)"
->
-
-<h3>
-🏠 Homework
-</h3>
-
-<p class="muted">
-Create homework students can complete at home.
-</p>
-
-</div>
-
-
-</div>
-
-
-<!-- GENERATOR FORM -->
-
-<div
- class="card"
- id="generatorForm"
- style="display:none;margin-top:22px"
->
-
-<h2 id="generatorTitle">
-Create Material
-</h2>
-
-<p
- class="muted"
- style="margin:8px 0 20px"
->
-Choose the subject, topic, number of questions and difficulty.
-</p>
-
 
 <div class="generator-form">
 
+<div class="form-group">
+<label for="generatorGrade">🎓 Grade</label>
+<select id="generatorGrade">
+<option>Grade 1</option>
+<option>Grade 2</option>
+<option>Grade 3</option>
+<option>Grade 4</option>
+<option>Grade 5</option>
+<option>Grade 6</option>
+<option>Grade 7</option>
+<option>Grade 8</option>
+<option>Grade 9</option>
+<option>Grade 10</option>
+<option>Grade 11</option>
+<option>Grade 12</option>
+</select>
+</div>
 
 <div class="form-group">
-
-<label for="generatorSubject">
-Subject
-</label>
-
+<label for="generatorSubject">Subject</label>
 <select id="generatorSubject">
-
 <option>Maths</option>
 <option>English</option>
 <option>Science</option>
@@ -1321,78 +1180,53 @@ Subject
 <option>Computer Science</option>
 <option>Biology</option>
 <option>Physics</option>
-
 </select>
-
 </div>
 
-
 <div class="form-group">
-
-<label for="generatorTopic">
-Topic
-</label>
-
-<input
- id="generatorTopic"
- placeholder="Example: Fractions"
->
-
+<label for="generatorTopic">Topic</label>
+<input id="generatorTopic" placeholder="Example: Fractions">
 </div>
 
-
 <div class="form-group">
-
-<label for="generatorQuestions">
-Number of Questions
-</label>
-
+<label for="generatorQuestions">Number of Questions</label>
 <select id="generatorQuestions">
-
 <option value="5">5</option>
 <option value="10">10</option>
 <option value="15">15</option>
 <option value="20">20</option>
 <option value="30">30</option>
-
 </select>
-
 </div>
 
-
 <div class="form-group">
-
-<label for="generatorDifficulty">
-Difficulty
-</label>
-
+<label for="generatorDifficulty">Difficulty</label>
 <select id="generatorDifficulty">
-
 <option>Beginner</option>
 <option>Intermediate</option>
 <option>Advanced</option>
-
 </select>
-
 </div>
 
-
+<div class="form-group">
+<label for="generatorLanguage">🌐 Language</label>
+<select id="generatorLanguage">
+<option>English</option>
+<option>French</option>
+<option>Spanish</option>
+<option>Portuguese</option>
+</select>
 </div>
 
+</div>
 
 <div class="generator-actions">
 
-<button
- class="primary-btn"
- onclick="createGeneratedMaterial()"
->
+<button class="primary-btn" onclick="createGeneratedMaterial()">
 ✨ Generate with AI
 </button>
 
-<button
- class="secondary-btn"
- onclick="clearGenerator()"
->
+<button class="secondary-btn" onclick="clearGenerator()">
 Clear
 </button>
 
@@ -1400,47 +1234,24 @@ Clear
 
 </div>
 
-
-<!-- GENERATED RESULT -->
-
-<div
- class="card generated-output"
- id="generatedContent"
- style="display:none"
-></div>
-
+<div class="card generated-output" id="generatedContent" style="display:none"></div>
 
 </section>
 
 
-<!-- WORKSHEETS -->
-
 <section class="page" id="worksheets">
 
-<h1>
-Worksheets
-</h1>
+<h1>Worksheets</h1>
 
-<div
- class="card"
- style="margin-top:20px"
->
+<div class="card" style="margin-top:20px">
 
-<h2>
-Create a Worksheet
-</h2>
+<h2>Create a Worksheet</h2>
 
-<p
- class="muted"
- style="margin:10px 0 18px"
->
+<p class="muted" style="margin:10px 0 18px">
 Use AI Generator to create your first worksheet.
 </p>
 
-<button
- class="primary-btn"
- onclick="openGeneratorFor('Worksheet')"
->
+<button class="primary-btn" onclick="openGeneratorFor('Worksheet')">
 Create Worksheet
 </button>
 
@@ -1449,170 +1260,242 @@ Create Worksheet
 </section>
 
 
-<!-- REVISION -->
-
 <section class="page" id="revision">
 
-<h1>
-Revision
-</h1>
+<h1>Revision</h1>
 
-
-<div
- class="cards"
- style="margin-top:20px"
->
+<div class="cards" style="margin-top:20px">
 
 <div class="card">
+<h3>Revision Notes</h3>
+<p class="muted">Review important topics.</p>
+</div>
 
-<h3>
-Revision Notes
-</h3>
+<div class="card">
+<h3>Flashcards</h3>
+<p class="muted">Practise key facts.</p>
+</div>
 
-<p class="muted">
-Review important topics.
-</p>
+<div class="card">
+<h3>Quick Questions</h3>
+<p class="muted">Check your understanding.</p>
+</div>
 
 </div>
 
-
 <div class="card">
 
-<h3>
-Flashcards
-</h3>
+<h2>Revision with AI</h2>
 
-<p class="muted">
-Practise key facts.
+<p class="muted" style="margin:10px 0 18px">
+Ask the AI Tutor to explain a topic or create revision questions.
 </p>
 
-</div>
-
-
-<div class="card">
-
-<h3>
-Quick Questions
-</h3>
-
-<p class="muted">
-Check your understanding.
-</p>
-
-</div>
+<button class="primary-btn" onclick="openPage('tutor')">
+Open AI Tutor
+</button>
 
 </div>
 
 </section>
 
-
-<!-- TESTS -->
 
 <section class="page" id="tests">
 
-<h1>
-Practice Tests
-</h1>
+<h1>Practice Tests</h1>
 
+<div class="card" style="margin-top:20px">
 
-<div
- class="card"
- style="margin-top:20px"
->
+<h2>Ready to test yourself?</h2>
 
-<h2>
-Ready to test yourself?
-</h2>
-
-<p
- class="muted"
- style="margin:10px 0 18px"
->
-Generate an exam or quiz and test your knowledge.
+<p class="muted" style="margin:10px 0 18px">
+Create a quiz and answer questions to track your score.
 </p>
 
-<button
- class="primary-btn"
- onclick="openGeneratorFor('Exam')"
->
+<button class="primary-btn" onclick="startPracticeQuiz()">
+🧠 Start Practice Quiz
+</button>
+
+<button class="secondary-btn" onclick="openGeneratorFor('Exam')" style="margin-left:8px">
 Generate Exam
 </button>
 
-<button
- class="secondary-btn"
- onclick="openGeneratorFor('Quiz')"
- style="margin-left:8px"
+</div>
+
+<div class="card" id="quizArea" style="display:none"></div>
+
+</section>
+
+
+<section class="page" id="goals">
+
+<h1>Goals 🎯</h1>
+
+<p class="muted" style="margin:8px 0 22px">
+Set learning goals and track your progress.
+</p>
+
+<div class="card">
+
+<h2>Create a Goal</h2>
+
+<div class="generator-form">
+
+<div class="form-group">
+
+<label>Goal</label>
+
+<input
+ id="goalName"
+ placeholder="Example: Complete 10 activities"
 >
-Generate Quiz
+
+</div>
+
+<div class="form-group">
+
+<label>Target</label>
+
+<input
+ id="goalTarget"
+ type="number"
+ min="1"
+ value="10"
+>
+
+</div>
+
+</div>
+
+<button
+ class="primary-btn"
+ onclick="createGoal()"
+ style="margin-top:18px"
+>
++ Add Goal
 </button>
+
+</div>
+
+<div id="goalsList"></div>
+
+</section>
+
+
+<section class="page" id="parent">
+
+<h1>Parent Dashboard 👨‍👩‍👧</h1>
+
+<p class="muted" style="margin:8px 0 22px">
+View learning progress, activity and goals.
+</p>
+
+<div id="parentLocked" class="parent-lock">
+
+<div class="card">
+
+<h2>Parent Access</h2>
+
+<p class="muted" style="margin:10px 0 18px">
+Enter the parent dashboard PIN to view the learning report.
+</p>
+
+<input
+ class="input"
+ id="parentPin"
+ type="password"
+ maxlength="6"
+ placeholder="Parent PIN"
+>
+
+<button class="primary-btn" onclick="openParentDashboard()">
+Open Parent Dashboard
+</button>
+
+<p class="muted" style="margin-top:12px">
+First time? The default demo PIN is <strong>1234</strong>.
+</p>
+
+</div>
+
+</div>
+
+<div id="parentDashboard" style="display:none">
+
+<div class="cards">
+
+<div class="card">
+<h3>Activities</h3>
+<div class="number" id="parentActivities">0</div>
+</div>
+
+<div class="card">
+<h3>Study Minutes</h3>
+<div class="number" id="parentMinutes">0</div>
+</div>
+
+<div class="card">
+<h3>Average Score</h3>
+<div class="number" id="parentScore">—</div>
+</div>
+
+<div class="card">
+<h3>Streak</h3>
+<div class="number" id="parentStreak">0</div>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Student Goals</h2>
+
+<div id="parentGoals"></div>
+
+</div>
+
+<div class="card">
+
+<h2>Recent Activity</h2>
+
+<div id="parentHistory"></div>
+
+</div>
 
 </div>
 
 </section>
 
 
-<!-- PREMIUM -->
-
 <section class="page" id="premium">
 
-<h1>
-LearnAI Premium 💎
-</h1>
+<h1>LearnAI Premium 💎</h1>
 
-<p
- class="muted"
- style="margin:8px 0 10px"
->
+<p class="muted" style="margin:8px 0 10px">
 Unlock the full LearnAI learning experience.
 </p>
 
-
 <div class="notice">
-
 Payments are securely handled by Stripe.
-You will be taken to Stripe's checkout page
-when you choose a plan.
-
+You will be taken to Stripe's checkout page when you choose a plan.
 </div>
-
 
 <div class="premium-grid">
 
-
 <div class="plan">
 
-<h2>
-Daily
-</h2>
+<h2>Daily</h2>
 
-<div class="price">
-$1
-</div>
+<div class="price">$1</div>
 
-<div class="muted">
-per day
-</div>
+<div class="muted">per day</div>
 
 <ul>
-
-<li>
-Premium AI Tutor
-</li>
-
-<li>
-AI learning tools
-</li>
-
-<li>
-Worksheets
-</li>
-
-<li>
-Practice materials
-</li>
-
+<li>Premium AI Tutor</li>
+<li>AI learning tools</li>
+<li>Worksheets</li>
+<li>Practice materials</li>
 </ul>
-
 
 <a
  href="https://buy.stripe.com/test_28EdR85gb1Lg8cl3oIdEs00"
@@ -1629,46 +1512,21 @@ Subscribe
 
 <div class="plan featured">
 
-<span class="badge">
-POPULAR
-</span>
+<span class="badge">POPULAR</span>
 
-<h2>
-Monthly
-</h2>
+<h2>Monthly</h2>
 
-<div class="price">
-$10
-</div>
+<div class="price">$10</div>
 
-<div class="muted">
-per month
-</div>
+<div class="muted">per month</div>
 
 <ul>
-
-<li>
-Premium AI Tutor
-</li>
-
-<li>
-AI Generator
-</li>
-
-<li>
-Worksheets
-</li>
-
-<li>
-Revision tools
-</li>
-
-<li>
-Practice tests
-</li>
-
+<li>Premium AI Tutor</li>
+<li>AI Generator</li>
+<li>Worksheets</li>
+<li>Revision tools</li>
+<li>Practice tests</li>
 </ul>
-
 
 <a
  href="https://buy.stripe.com/test_cNi4gy23Z0Hc64d6AUdEs01"
@@ -1685,42 +1543,19 @@ Subscribe
 
 <div class="plan">
 
-<h2>
-Yearly
-</h2>
+<h2>Yearly</h2>
 
-<div class="price">
-$90
-</div>
+<div class="price">$90</div>
 
-<div class="muted">
-per year
-</div>
+<div class="muted">per year</div>
 
 <ul>
-
-<li>
-Premium AI Tutor
-</li>
-
-<li>
-AI Generator
-</li>
-
-<li>
-All learning tools
-</li>
-
-<li>
-Progress tracking
-</li>
-
-<li>
-Premium features
-</li>
-
+<li>Premium AI Tutor</li>
+<li>AI Generator</li>
+<li>All learning tools</li>
+<li>Progress tracking</li>
+<li>Premium features</li>
 </ul>
-
 
 <a
  href="https://buy.stripe.com/test_28EdR85gb1Lg8cl3oIdEs00"
@@ -1739,30 +1574,22 @@ Subscribe
 </section>
 
 
-<!-- CONVERSATION -->
-
 <section class="page" id="conversation">
 
-<h1>
-Conversation
-</h1>
+<h1>Conversation History 💬</h1>
 
+<p class="muted" style="margin:8px 0 22px">
+Your saved AI Tutor conversations appear here.
+</p>
 
-<div
- class="card"
- style="margin-top:20px"
->
+<div id="conversationList"></div>
 
-<h2>
-Current AI Tutor Conversation
-</h2>
+<div class="card" id="conversationEmpty">
 
-<p
- class="muted"
- style="margin-top:10px"
->
-Your current conversation is kept in the AI Tutor while this page is open.
-Permanent saved conversations can be connected to your database later.
+<h2>No saved conversations yet</h2>
+
+<p class="muted" style="margin-top:10px">
+Start an AI Tutor conversation and it will appear here.
 </p>
 
 <button
@@ -1778,50 +1605,25 @@ Open AI Tutor
 </section>
 
 
-<!-- SETTINGS -->
-
 <section class="page" id="settings">
 
-<h1>
-Settings
-</h1>
-
+<h1>Settings</h1>
 
 <div style="margin-top:20px">
 
-
 <div class="setting">
 
 <div>
-
-<strong>
-Language
-</strong>
-
-<div class="muted">
-Choose your learning language.
+<strong>Language</strong>
+<div class="muted">Choose your learning language.</div>
 </div>
 
-</div>
+<select id="language" onchange="saveSettings()">
 
-
-<select id="language">
-
-<option>
-English
-</option>
-
-<option>
-French
-</option>
-
-<option>
-Spanish
-</option>
-
-<option>
-Portuguese
-</option>
+<option>English</option>
+<option>French</option>
+<option>Spanish</option>
+<option>Portuguese</option>
 
 </select>
 
@@ -1831,31 +1633,15 @@ Portuguese
 <div class="setting">
 
 <div>
-
-<strong>
-Learning Level
-</strong>
-
-<div class="muted">
-AI explanations should match your level.
+<strong>Learning Level</strong>
+<div class="muted">AI explanations should match your level.</div>
 </div>
 
-</div>
+<select id="level" onchange="saveSettings()">
 
-
-<select id="level">
-
-<option>
-Beginner
-</option>
-
-<option>
-Intermediate
-</option>
-
-<option>
-Advanced
-</option>
+<option>Beginner</option>
+<option>Intermediate</option>
+<option>Advanced</option>
 
 </select>
 
@@ -1865,21 +1651,11 @@ Advanced
 <div class="setting">
 
 <div>
-
-<strong>
-Notifications
-</strong>
-
-<div class="muted">
-Study reminders and learning updates.
+<strong>Notifications</strong>
+<div class="muted">Study reminders and learning updates.</div>
 </div>
 
-</div>
-
-<input
- type="checkbox"
- checked
->
+<input type="checkbox" id="notifications" checked>
 
 </div>
 
@@ -1887,19 +1663,13 @@ Study reminders and learning updates.
 <div class="setting">
 
 <div>
-
-<strong>
-Dark Mode
-</strong>
-
-<div class="muted">
-Change the appearance of LearnAI.
-</div>
-
+<strong>Dark Mode</strong>
+<div class="muted">Change the appearance of LearnAI.</div>
 </div>
 
 <input
  type="checkbox"
+ id="darkMode"
  onchange="toggleDarkMode(this)"
 >
 
@@ -1909,26 +1679,15 @@ Change the appearance of LearnAI.
 <div class="setting">
 
 <div>
-
-<strong>
-Account
-</strong>
-
-<div class="muted">
-Manage your LearnAI account.
+<strong>Account</strong>
+<div class="muted">Manage your LearnAI account.</div>
 </div>
 
-</div>
-
-<button
- class="primary-btn"
- onclick="logout()"
->
+<button class="primary-btn" onclick="logout()">
 Log Out
 </button>
 
 </div>
-
 
 </div>
 
@@ -1944,21 +1703,69 @@ Log Out
 <script>
 
 /* =========================================================
-   LEARNAI FRONTEND
+   LEARNAI DATA
    ========================================================= */
 
+const SUPABASE_URL = "https://qvplwnfwhxmhildjtrml.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_D1Dt09fW6R1N7RcbE4iYGQ_vx5gLlQB";
+
 let isSignup = false;
-
 let currentSubject = "General";
-
 let generatorType = "Worksheet";
+let recognition = null;
 
-let learningData = {
+let learningData = JSON.parse(
+ localStorage.getItem("learnAIProgress")
+) || {
  activities: 0,
  minutes: 0,
  scores: [],
- streak: 0
+ streak: 0,
+ lastActivityDate: null,
+ quizAttempts: 0,
+ subjectActivities: {},
+ goals: [],
+ activityHistory: []
 };
+
+learningData.scores =
+ Array.isArray(learningData.scores)
+ ? learningData.scores
+ : [];
+
+learningData.goals =
+ Array.isArray(learningData.goals)
+ ? learningData.goals
+ : [];
+
+learningData.activityHistory =
+ Array.isArray(learningData.activityHistory)
+ ? learningData.activityHistory
+ : [];
+
+learningData.subjectActivities =
+ learningData.subjectActivities || {};
+
+let conversations =
+ JSON.parse(
+  localStorage.getItem("learnAIConversations")
+ ) || [];
+
+let currentConversation = [];
+
+
+/* =========================================================
+   SAVE DATA
+   ========================================================= */
+
+function saveLearningData(){
+
+ localStorage.setItem(
+  "learnAIProgress",
+  JSON.stringify(learningData)
+ );
+
+}
 
 
 /* =========================================================
@@ -1968,7 +1775,6 @@ let learningData = {
 function showAuth(){
 
  document.getElementById("gate").style.display = "none";
-
  document.getElementById("auth").style.display = "flex";
 
 }
@@ -1983,120 +1789,151 @@ function toggleAuth(){
  ? "Create your LearnAI account"
  : "Welcome to LearnAI";
 
-
  document.getElementById("authText").textContent =
  isSignup
  ? "Create an account to start learning."
  : "Sign in to continue learning.";
 
-
  document.getElementById("nameInput").style.display =
- isSignup
- ? "block"
- : "none";
-
+ isSignup ? "block" : "none";
 
  document.getElementById("authButton").textContent =
- isSignup
- ? "Sign Up"
- : "Log In";
-
+ isSignup ? "Sign Up" : "Log In";
 
  document.getElementById("switchText").textContent =
  isSignup
  ? "Already have an account? "
  : "Don't have an account? ";
 
-
  document.getElementById("switchButton").textContent =
- isSignup
- ? "Log In"
- : "Sign Up";
+ isSignup ? "Log In" : "Sign Up";
 
 }
 
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
-function login(){
+let currentUser = null;
+async function login() {
+  const email = document.getElementById("emailInput").value.trim();
+  const password = document.getElementById("passwordInput").value;
+  const name = document.getElementById("nameInput").value.trim();
 
- const name =
- document.getElementById("nameInput").value.trim();
+  if (!email || !password) {
+    alert("Please enter your email and password.");
+    return;
+  }
 
+  if (isSignup && !name) {
+    alert("Please enter your name.");
+    return;
+  }
 
- const studentName =
- isSignup && name
- ? name
- : "Student";
+  if (isSignup) {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: {
+          name: name
+        }
+      }
+    });
 
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
- document.getElementById("accountName").textContent =
- studentName;
+    if (!data.session) {
+      alert("Account created! Check your email to confirm your account.");
+      return;
+    }
 
+    currentUser = data.user;
+  } else {
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
 
- document.getElementById("auth").style.display =
- "none";
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
+    currentUser = data.user;
+  }
 
- document.getElementById("app").style.display =
- "block";
+  const studentName =
+    currentUser.user_metadata?.name ||
+    currentUser.email ||
+    "Student";
 
+  document.getElementById("accountName").textContent = studentName;
 
- updateProgress();
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("app").style.display = "block";
 
+  loadSettings();
+  updateProgress();
+  renderGoals();
+  renderConversationHistory();
 }
 
+async function logout() {
+  await supabaseClient.auth.signOut();
+
+  document.getElementById("app").style.display = "none";
+  document.getElementById("gate").style.display = "flex";
+}
 
 /* =========================================================
-   LOGOUT
-   ========================================================= */
-
-function logout(){
-
- document.getElementById("app").style.display =
- "none";
-
- document.getElementById("gate").style.display =
- "flex";
-
-}
-
-
-/* =========================================================
-   PAGE NAVIGATION
+   NAVIGATION
    ========================================================= */
 
 function openPage(pageId,button){
 
  document.querySelectorAll(".page").forEach(page=>{
-
   page.classList.remove("active");
-
  });
-
 
  const page =
  document.getElementById(pageId);
 
-
  if(page){
-
   page.classList.add("active");
-
  }
-
 
  document.querySelectorAll(
  ".nav button,.bottom-nav button"
  ).forEach(btn=>{
-
   btn.classList.remove("active");
-
  });
 
-
  if(button){
-
   button.classList.add("active");
+ }
 
+ if(pageId === "progress"){
+  updateProgress();
+ }
+
+ if(pageId === "goals"){
+  renderGoals();
+ }
+
+ if(pageId === "conversation"){
+  renderConversationHistory();
+ }
+
+ if(pageId === "parent"){
+  document.getElementById("parentPin").value = "";
+  document.getElementById("parentDashboard").style.display = "none";
+  document.getElementById("parentLocked").style.display = "block";
  }
 
 }
@@ -2110,9 +1947,10 @@ function chooseSubject(subject){
 
  currentSubject = subject;
 
+ currentConversation = [];
+
  const chat =
  document.getElementById("chat");
-
 
  chat.innerHTML = `
 
@@ -2140,79 +1978,57 @@ async function sendMessage(){
  const input =
  document.getElementById("question");
 
-
  const question =
  input.value.trim();
 
-
  if(!question){
-
   return;
-
  }
-
 
  const chat =
  document.getElementById("chat");
 
-
  chat.innerHTML += `
-
  <div class="message user">
  ${escapeHTML(question)}
  </div>
-
  `;
 
-
  input.value = "";
-
-
- const history = [
-
-  ...chat.querySelectorAll(".message")
-
- ].map(message => ({
-
-  role:
-   message.classList.contains("user")
-   ? "user"
-   : "assistant",
-
-  content:
-   message.textContent
-
- }));
-
 
  const thinking =
  document.createElement("div");
 
-
- thinking.className =
- "message ai";
-
-
- thinking.textContent =
- "Thinking...";
-
+ thinking.className = "message ai";
+ thinking.textContent = "Thinking...";
 
  chat.appendChild(thinking);
 
-
  chat.scrollTop =
  chat.scrollHeight;
-
 
  try{
 
   const level =
    document.getElementById("level").value;
 
-
   const language =
    document.getElementById("language").value;
 
+  const history =
+   [...chat.querySelectorAll(".message")]
+   .slice(-20)
+   .map(message=>({
+
+    role:
+     message.classList.contains("user")
+     ? "user"
+     : "assistant",
+
+    content:
+     message.textContent
+
+   }));
 
   const response =
    await fetch("/api/ai",{
@@ -2225,51 +2041,58 @@ async function sendMessage(){
 
     body:JSON.stringify({
 
-     question:question,
-
+     question,
      subject:currentSubject,
-
-     level:level,
-
-     language:language,
-
-     history:history
+     level,
+     language,
+     history
 
     })
 
    });
 
-
   const data =
    await response.json();
 
-
   if(!response.ok){
-
    throw new Error(
     data.error ||
     "AI backend unavailable"
    );
-
   }
 
-
-  thinking.textContent =
+  const answer =
    data.answer ||
    "I couldn't get an answer right now.";
 
+  thinking.textContent =
+   answer;
+
+  currentConversation =
+   [...chat.querySelectorAll(".message")]
+   .map(message=>({
+
+    role:
+     message.classList.contains("user")
+     ? "user"
+     : "assistant",
+
+    content:
+     message.textContent
+
+   }));
+
+  saveConversation();
 
  }catch(error){
 
   console.error(error);
-
 
   thinking.textContent =
    "AI Error: " +
    error.message;
 
  }
-
 
  chat.scrollTop =
  chat.scrollHeight;
@@ -2292,35 +2115,42 @@ function handleEnter(event){
  }
 
 }
- 
+
+
 /* =========================================================
    VOICE INPUT
    ========================================================= */
 
-let recognition = null;
-
 function startVoiceInput(){
 
- if(!("webkitSpeechRecognition" in window) &&
-    !("SpeechRecognition" in window)){
+ if(
+  !("webkitSpeechRecognition" in window) &&
+  !("SpeechRecognition" in window)
+ ){
 
-  alert("Voice input is not supported in this browser.");
+  alert(
+   "Voice input is not supported in this browser."
+  );
+
   return;
-
  }
 
  const SpeechRecognition =
   window.SpeechRecognition ||
   window.webkitSpeechRecognition;
 
- recognition = new SpeechRecognition();
+ recognition =
+  new SpeechRecognition();
+
+ const language =
+  document.getElementById("language").value;
 
  recognition.lang =
-  document.getElementById("language").value === "French"
+  language === "French"
   ? "fr-FR"
-  : document.getElementById("language").value === "Spanish"
+  : language === "Spanish"
   ? "es-ES"
-  : document.getElementById("language").value === "Portuguese"
+  : language === "Portuguese"
   ? "pt-PT"
   : "en-US";
 
@@ -2332,7 +2162,8 @@ function startVoiceInput(){
 
  button.textContent = "🔴";
 
- recognition.onresult = function(event){
+ recognition.onresult =
+ function(event){
 
   const text =
    event.results[0][0].transcript;
@@ -2344,13 +2175,15 @@ function startVoiceInput(){
 
  };
 
- recognition.onerror = function(){
+ recognition.onerror =
+ function(){
 
   button.textContent = "🎤";
 
  };
 
- recognition.onend = function(){
+ recognition.onend =
+ function(){
 
   button.textContent = "🎤";
 
@@ -2360,14 +2193,17 @@ function startVoiceInput(){
 
 }
 
+
 /* =========================================================
    NEW CHAT
    ========================================================= */
 
 function newChat(){
 
- currentSubject = "General";
+ saveConversation();
 
+ currentSubject = "General";
+ currentConversation = [];
 
  document.getElementById("chat").innerHTML = `
 
@@ -2383,18 +2219,188 @@ function newChat(){
  chess, football, basketball, technology,
  general knowledge and many other topics.
 
- <br><br>
-
- For current information,
- I can use online search when
- web search is enabled on the AI backend.
-
  </div>
 
  `;
 
-
  document.getElementById("question").focus();
+
+}
+
+
+/* =========================================================
+   CONVERSATION HISTORY
+   ========================================================= */
+
+function saveConversation(){
+
+ if(!currentConversation.length){
+  return;
+ }
+
+ const firstUser =
+  currentConversation.find(
+   item => item.role === "user"
+  );
+
+ if(!firstUser){
+  return;
+ }
+
+ const title =
+  firstUser.content.length > 45
+  ? firstUser.content.substring(0,45) + "..."
+  : firstUser.content;
+
+ const conversation = {
+
+  id: Date.now(),
+
+  title,
+
+  subject: currentSubject,
+
+  date: new Date().toLocaleString(),
+
+  messages: currentConversation
+
+ };
+
+ conversations.unshift(conversation);
+
+ conversations =
+ conversations.slice(0,30);
+
+ localStorage.setItem(
+  "learnAIConversations",
+  JSON.stringify(conversations)
+ );
+
+}
+
+
+function renderConversationHistory(){
+
+ const list =
+ document.getElementById("conversationList");
+
+ const empty =
+ document.getElementById("conversationEmpty");
+
+ if(!conversations.length){
+
+  list.innerHTML = "";
+
+  empty.style.display = "block";
+
+  return;
+
+ }
+
+ empty.style.display = "none";
+
+ list.innerHTML =
+ conversations.map((conversation,index)=>`
+
+ <div class="history-item">
+
+ <h3>
+ 💬 ${escapeHTML(conversation.title)}
+ </h3>
+
+ <p class="muted" style="margin-top:6px">
+ ${escapeHTML(conversation.subject)}
+ •
+ ${escapeHTML(conversation.date)}
+ </p>
+
+ <div style="margin-top:12px">
+
+ <button
+  class="small-btn"
+  onclick="loadConversation(${index})"
+ >
+ Open
+ </button>
+
+ <button
+  class="small-btn danger-btn"
+  onclick="deleteConversation(${index})"
+ >
+ Delete
+ </button>
+
+ </div>
+
+ </div>
+
+ `).join("");
+
+}
+
+
+function loadConversation(index){
+
+ const conversation =
+ conversations[index];
+
+ if(!conversation){
+  return;
+ }
+
+ currentSubject =
+  conversation.subject;
+
+ currentConversation =
+  conversation.messages;
+
+ openPage("tutor");
+
+ const chat =
+  document.getElementById("chat");
+
+ chat.innerHTML = "";
+
+ conversation.messages.forEach(message=>{
+
+  const div =
+   document.createElement("div");
+
+  div.className =
+   "message " +
+   (
+    message.role === "user"
+    ? "user"
+    : "ai"
+   );
+
+  div.textContent =
+   message.content;
+
+  chat.appendChild(div);
+
+ });
+
+ chat.scrollTop =
+ chat.scrollHeight;
+
+}
+
+
+function deleteConversation(index){
+
+ if(!confirm("Delete this conversation?")){
+  return;
+ }
+
+ conversations.splice(index,1);
+
+ localStorage.setItem(
+  "learnAIConversations",
+  JSON.stringify(conversations)
+ );
+
+ renderConversationHistory();
 
 }
 
@@ -2407,13 +2413,9 @@ function selectGenerator(type,card){
 
  generatorType = type;
 
-
  document.querySelectorAll(".generator-card").forEach(item=>{
-
   item.classList.remove("selected");
-
  });
-
 
  if(card){
 
@@ -2426,42 +2428,27 @@ function selectGenerator(type,card){
     `.generator-card[data-type="${type}"]`
    );
 
-
   if(matching){
-
    matching.classList.add("selected");
-
   }
 
  }
 
-
  const form =
   document.getElementById("generatorForm");
 
-
- form.style.display =
-  "block";
-
+ form.style.display = "block";
 
  document.getElementById("generatorTitle").textContent =
   "Create " + type;
 
-
  form.scrollIntoView({
-
   behavior:"smooth",
-
   block:"start"
-
  });
 
 }
 
-
-/* =========================================================
-   OPEN GENERATOR FROM OTHER PAGES
-   ========================================================= */
 
 function openGeneratorFor(type){
 
@@ -2471,10 +2458,6 @@ function openGeneratorFor(type){
 
 }
 
-
-/* =========================================================
-   CLEAR GENERATOR
-   ========================================================= */
 
 function clearGenerator(){
 
@@ -2486,38 +2469,28 @@ function clearGenerator(){
 }
 
 
-/* =========================================================
-   CREATE AI MATERIAL
-   ========================================================= */
-
 async function createGeneratedMaterial(){
 
  const subject =
   document.getElementById("generatorSubject").value;
- 
+
  const grade =
   document.getElementById("generatorGrade").value;
-
 
  const topic =
   document.getElementById("generatorTopic").value.trim();
 
-
  const questionCount =
   document.getElementById("generatorQuestions").value;
-
 
  const difficulty =
   document.getElementById("generatorDifficulty").value;
 
-
-const language =
+ const language =
   document.getElementById("generatorLanguage").value;
-
 
  const box =
   document.getElementById("generatedContent");
-
 
  if(!topic){
 
@@ -2529,10 +2502,7 @@ const language =
 
  }
 
-
- box.style.display =
-  "block";
-
+ box.style.display = "block";
 
  box.innerHTML = `
 
@@ -2546,24 +2516,16 @@ const language =
 
  </div>
 
- <p
- class="muted"
- style="margin-top:10px"
- >
+ <p class="muted" style="margin-top:10px">
  LearnAI AI is preparing your material.
  </p>
 
  `;
 
-
  box.scrollIntoView({
-
   behavior:"smooth",
-
   block:"start"
-
  });
-
 
  const prompt = `
 
@@ -2590,39 +2552,32 @@ ${language}
 IMPORTANT INSTRUCTIONS:
 
 1. Make the material clear and educational.
-2. Make it appropriate for the student's learning level.
+2. Make it appropriate for the student's grade.
 3. Number every question clearly.
 4. Do not make up information when accuracy matters.
-5. Keep the formatting easy to read.
+5. Keep formatting easy to read.
 6. Do not include dangerous or inappropriate content.
 
 If this is a WORKSHEET:
 Create practice questions and activities.
-Include enough space or instructions for the student to answer.
 
 If this is an EXAM:
-Create a proper exam.
-Include clear sections where useful.
-Include marks for questions.
-Include the total marks.
-Do NOT reveal the answers immediately.
+Create a proper exam with clear sections,
+marks and total marks.
+Do NOT reveal answers immediately.
 
 If this is a QUIZ:
 Create concise questions.
-Use a mixture of question types when appropriate.
-Do NOT reveal the answers immediately.
+Do NOT reveal answers immediately.
 
 If this is CLASSWORK:
-Create activities suitable for completing during a lesson.
-Include clear instructions.
+Create classroom activities.
 
 If this is HOMEWORK:
-Create useful practice activities that can be completed at home.
-Include clear instructions.
+Create useful home practice.
 
 Return only the finished ${generatorType}.
 `;
-
 
  try{
 
@@ -2638,73 +2593,57 @@ Return only the finished ${generatorType}.
     body:JSON.stringify({
 
      question:prompt,
-
-     subject:subject,
-
+     subject,
      level:difficulty,
-
-     language:language,
-
+     language,
      history:[]
 
     })
 
    });
 
-
   const data =
    await response.json();
-
 
   if(!response.ok){
 
    throw new Error(
-
     data.error ||
     "AI generator unavailable"
-
    );
 
   }
-
 
   const answer =
    data.answer ||
    "No material was generated.";
 
-
   box.innerHTML = `
 
-  <h2>
-  ✨ ${escapeHTML(generatorType)}
-  </h2>
+  <h2>✨ ${escapeHTML(generatorType)}</h2>
 
+  <p class="muted" style="margin:8px 0 20px">
 
-  <p
-   class="muted"
-   style="margin:8px 0 20px"
-  >
-
+  ${escapeHTML(grade)}
+  •
   ${escapeHTML(subject)}
   •
   ${escapeHTML(topic)}
   •
   ${escapeHTML(difficulty)}
+  •
+  ${escapeHTML(language)}
 
   </p>
-
 
   <div
    class="message ai"
    style="max-width:100%"
   >
 
-   <pre>
-${escapeHTML(answer)}
-   </pre>
+   <pre>${escapeHTML(answer)}</pre>
 
   </div>
-
 
   <div style="margin-top:15px">
 
@@ -2719,28 +2658,17 @@ ${escapeHTML(answer)}
 
   `;
 
-
  }catch(error){
 
   console.error(error);
 
-
   box.innerHTML = `
 
-  <h2>
-  ⚠️ Generator Error
-  </h2>
+  <h2>⚠️ Generator Error</h2>
 
-
-  <p
-   class="muted"
-   style="margin-top:10px"
-  >
-
+  <p class="muted" style="margin-top:10px">
   ${escapeHTML(error.message)}
-
   </p>
-
 
   <button
    class="primary-btn"
@@ -2758,17 +2686,59 @@ ${escapeHTML(answer)}
 
 
 /* =========================================================
-   PROGRESS
+   PROGRESS TRACKING
    ========================================================= */
 
-function completeActivity(){
+function completeActivity(subject = null){
 
  learningData.activities += 1;
 
  learningData.minutes += 5;
 
- updateProgress();
+ const usedSubject =
+  subject ||
+  document.getElementById("generatorSubject")?.value ||
+  currentSubject ||
+  "General";
 
+ if(!learningData.subjectActivities[usedSubject]){
+  learningData.subjectActivities[usedSubject] = 0;
+ }
+
+ learningData.subjectActivities[usedSubject] += 1;
+
+ const today =
+  new Date().toISOString().split("T")[0];
+
+ if(
+  learningData.lastActivityDate !== today
+ ){
+
+  learningData.streak += 1;
+
+  learningData.lastActivityDate =
+   today;
+
+ }
+
+ learningData.activityHistory.unshift({
+
+  type:"Activity",
+
+  subject:usedSubject,
+
+  date:new Date().toLocaleString()
+
+ });
+
+ learningData.activityHistory =
+  learningData.activityHistory.slice(0,30);
+
+ updateGoals();
+
+ saveLearningData();
+
+ updateProgress();
 
  alert(
   "Activity completed! Your progress has been updated."
@@ -2777,69 +2747,1065 @@ function completeActivity(){
 }
 
 
+function recordScore(score,subject="General"){
+
+ const numericScore =
+  Number(score);
+
+ if(
+  !Number.isFinite(numericScore)
+ ){
+  return;
+ }
+
+ const safeScore =
+  Math.max(
+   0,
+   Math.min(100,numericScore)
+  );
+
+ learningData.scores.push(
+  safeScore
+ );
+
+ learningData.quizAttempts += 1;
+
+ learningData.activities += 1;
+
+ learningData.minutes += 5;
+
+ if(!learningData.subjectActivities[subject]){
+  learningData.subjectActivities[subject] = 0;
+ }
+
+ learningData.subjectActivities[subject] += 1;
+
+ const today =
+  new Date().toISOString().split("T")[0];
+
+ if(
+  learningData.lastActivityDate !== today
+ ){
+
+  learningData.streak += 1;
+
+  learningData.lastActivityDate =
+   today;
+
+ }
+
+ learningData.activityHistory.unshift({
+
+  type:"Quiz",
+
+  subject,
+
+  score:safeScore,
+
+  date:new Date().toLocaleString()
+
+ });
+
+ learningData.activityHistory =
+  learningData.activityHistory.slice(0,30);
+
+ updateGoals();
+
+ saveLearningData();
+
+ updateProgress();
+
+}
+
+
 function updateProgress(){
 
- document.getElementById("activities").textContent =
-  learningData.activities;
+ const ids = [
+  "activities",
+  "progressActivities"
+ ];
 
+ ids.forEach(id=>{
 
- document.getElementById("progressActivities").textContent =
-  learningData.activities;
+  const element =
+   document.getElementById(id);
 
+  if(element){
+   element.textContent =
+    learningData.activities;
+  }
 
- document.getElementById("minutes").textContent =
-  learningData.minutes;
+ });
 
+ const minutesIds = [
+  "minutes",
+  "progressMinutes"
+ ];
 
- document.getElementById("progressMinutes").textContent =
-  learningData.minutes;
+ minutesIds.forEach(id=>{
 
+  const element =
+   document.getElementById(id);
+
+  if(element){
+   element.textContent =
+    learningData.minutes;
+  }
+
+ });
 
  const average =
-
   learningData.scores.length
-
   ? Math.round(
-
    learningData.scores.reduce(
     (a,b)=>a+b,
     0
    )
    /
    learningData.scores.length
-
   )
-
   : null;
 
+ const scoreElement =
+  document.getElementById("score");
 
- document.getElementById("score").textContent =
+ if(scoreElement){
 
-  average === null
-  ? "—"
-  : average + "%";
+  scoreElement.textContent =
+   average === null
+   ? "—"
+   : average + "%";
 
+ }
 
- document.getElementById("bestScore").textContent =
-
+ const best =
   learningData.scores.length
-
   ? Math.max(
     ...learningData.scores
-   ) + "%"
+   )
+  : null;
 
-  : "—";
+ const bestElement =
+  document.getElementById("bestScore");
+
+ if(bestElement){
+
+  bestElement.textContent =
+   best === null
+   ? "—"
+   : best + "%";
+
+ }
+
+ const streakElement =
+  document.getElementById("streak");
+
+ if(streakElement){
+  streakElement.textContent =
+   learningData.streak;
+ }
+
+ const quizIds = [
+  "quizAttempts",
+  "progressQuizAttempts"
+ ];
+
+ quizIds.forEach(id=>{
+
+  const element =
+   document.getElementById(id);
+
+  if(element){
+   element.textContent =
+    learningData.quizAttempts;
+  }
+
+ });
+
+ updateGoalDisplay();
+ updateSubjectProgress();
+
+}
 
 
- document.getElementById("streak").textContent =
-  learningData.streak;
+function updateSubjectProgress(){
+
+ const container =
+  document.getElementById("subjectProgress");
+
+ if(!container){
+  return;
+ }
+
+ const entries =
+  Object.entries(
+   learningData.subjectActivities
+  );
+
+ if(!entries.length){
+
+  container.innerHTML = `
+   <p class="muted">
+   Complete activities to see your subject progress.
+   </p>
+  `;
+
+  return;
+
+ }
+
+ container.innerHTML =
+  entries
+  .sort((a,b)=>b[1]-a[1])
+  .map(([subject,count])=>`
+
+   <div style="margin-top:15px">
+
+    <div style="
+     display:flex;
+     justify-content:space-between;
+     margin-bottom:6px
+    ">
+
+     <strong>
+      ${escapeHTML(subject)}
+     </strong>
+
+     <span class="muted">
+      ${count} activities
+     </span>
+
+    </div>
+
+    <div class="progress-bar">
+
+     <div
+      class="progress-fill"
+      style="width:${Math.min(count*10,100)}%"
+     ></div>
+
+    </div>
+
+   </div>
+
+  `)
+  .join("");
 
 }
 
 
 /* =========================================================
-   DARK MODE
+   GOALS
    ========================================================= */
+
+function createGoal(){
+
+ const name =
+  document.getElementById("goalName").value.trim();
+
+ const target =
+  Number(
+   document.getElementById("goalTarget").value
+  );
+
+ if(!name){
+
+  alert("Please enter a goal.");
+
+  return;
+
+ }
+
+ if(
+  !Number.isFinite(target) ||
+  target <= 0
+ ){
+
+  alert("Please enter a valid target.");
+
+  return;
+
+ }
+
+ learningData.goals.push({
+
+  id:Date.now(),
+
+  name,
+
+  target,
+
+  progress:0,
+
+  created:new Date().toLocaleDateString()
+
+ });
+
+ saveLearningData();
+
+ document.getElementById("goalName").value = "";
+
+ document.getElementById("goalTarget").value = "10";
+
+ renderGoals();
+
+ updateProgress();
+
+}
+
+
+function updateGoals(){
+
+ learningData.goals.forEach(goal=>{
+
+  goal.progress =
+   Math.min(
+    learningData.activities,
+    goal.target
+   );
+
+ });
+
+}
+
+
+function renderGoals(){
+
+ const list =
+  document.getElementById("goalsList");
+
+ if(!list){
+  return;
+ }
+
+ if(!learningData.goals.length){
+
+  list.innerHTML = `
+
+   <div class="card">
+
+    <h2>No goals yet 🎯</h2>
+
+    <p class="muted" style="margin-top:10px">
+    Create your first learning goal above.
+    </p>
+
+   </div>
+
+  `;
+
+  return;
+
+ }
+
+ list.innerHTML =
+  learningData.goals.map(goal=>{
+
+   const percent =
+    Math.min(
+     100,
+     Math.round(
+      goal.progress /
+      goal.target *
+      100
+     )
+    );
+
+   return `
+
+   <div class="goal-item">
+
+    <div class="goal-top">
+
+     <div>
+
+      <h3>
+       ${escapeHTML(goal.name)}
+      </h3>
+
+      <p class="muted">
+       ${goal.progress} / ${goal.target}
+      </p>
+
+     </div>
+
+     <strong>
+      ${percent}%
+     </strong>
+
+    </div>
+
+    <div class="progress-bar">
+
+     <div
+      class="progress-fill"
+      style="width:${percent}%"
+     ></div>
+
+    </div>
+
+    <div class="goal-actions">
+
+     <button
+      class="small-btn"
+      onclick="addGoalProgress(${goal.id})"
+     >
+      +1 Progress
+     </button>
+
+     <button
+      class="small-btn danger-btn"
+      onclick="deleteGoal(${goal.id})"
+     >
+      Delete
+     </button>
+
+    </div>
+
+   </div>
+
+   `;
+
+  }).join("");
+
+}
+
+
+function addGoalProgress(id){
+
+ const goal =
+  learningData.goals.find(
+   item=>item.id === id
+  );
+
+ if(!goal){
+  return;
+ }
+
+ goal.progress =
+  Math.min(
+   goal.target,
+   goal.progress + 1
+  );
+
+ saveLearningData();
+
+ renderGoals();
+
+ updateProgress();
+
+}
+
+
+function deleteGoal(id){
+
+ learningData.goals =
+  learningData.goals.filter(
+   goal=>goal.id !== id
+  );
+
+ saveLearningData();
+
+ renderGoals();
+
+ updateProgress();
+
+}
+
+
+function updateGoalDisplay(){
+
+ const totalTarget =
+  learningData.goals.reduce(
+   (sum,goal)=>sum + Number(goal.target),
+   0
+  );
+
+ const totalProgress =
+  learningData.goals.reduce(
+   (sum,goal)=>sum + Number(goal.progress),
+   0
+  );
+
+ const percent =
+  totalTarget
+  ? Math.min(
+   100,
+   Math.round(
+    totalProgress /
+    totalTarget *
+    100
+   )
+  )
+  : 0;
+
+ const elements = [
+  document.getElementById("goalPercent"),
+  document.getElementById("progressGoalPercent")
+ ];
+
+ elements.forEach(element=>{
+
+  if(element){
+   element.textContent =
+    percent + "%";
+  }
+
+ });
+
+ const bars = [
+  document.getElementById("goalProgressBar"),
+  document.getElementById("progressGoalBar")
+ ];
+
+ bars.forEach(bar=>{
+
+  if(bar){
+   bar.style.width =
+    percent + "%";
+  }
+
+ });
+
+ const summary =
+  document.getElementById("goalSummary");
+
+ if(summary){
+
+  summary.textContent =
+   learningData.goals.length
+   ? `${totalProgress} of ${totalTarget} total goal points completed.`
+   : "Create a goal to start tracking it.";
+
+ }
+
+}
+
+
+/* =========================================================
+   PRACTICE QUIZZES
+   ========================================================= */
+
+let quizQuestions = [];
+let quizIndex = 0;
+let quizAnswers = [];
+let quizSubject = "Maths";
+
+
+async function startPracticeQuiz(){
+
+ quizSubject =
+  document.getElementById("generatorSubject")?.value ||
+  "Maths";
+
+ const area =
+  document.getElementById("quizArea");
+
+ area.style.display = "block";
+
+ area.innerHTML = `
+
+ <div class="loading">
+  🧠 Creating your practice quiz...
+ </div>
+
+ <p class="muted" style="margin-top:10px">
+ LearnAI is preparing your questions.
+ </p>
+
+ `;
+
+ try{
+
+  const prompt = `
+
+Create a 5-question multiple-choice school quiz.
+
+Subject: ${quizSubject}
+
+Return ONLY valid JSON.
+
+The JSON must have this exact structure:
+
+{
+ "questions":[
+  {
+   "question":"question text",
+   "options":["A","B","C","D"],
+   "answer":0
+  }
+ ]
+}
+
+Rules:
+
+- Exactly 5 questions.
+- Four options per question.
+- "answer" must be the number 0, 1, 2 or 3.
+- Make the quiz educational.
+- Do not include dangerous or inappropriate content.
+`;
+
+  const response =
+   await fetch("/api/ai",{
+
+    method:"POST",
+
+    headers:{
+     "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+     question:prompt,
+
+     subject:quizSubject,
+
+     level:
+      document.getElementById("level").value,
+
+     language:
+      document.getElementById("language").value,
+
+     history:[]
+
+    })
+
+   });
+
+  const data =
+   await response.json();
+
+  if(!response.ok){
+   throw new Error(
+    data.error ||
+    "Quiz generation failed."
+   );
+  }
+
+  const raw =
+   data.answer || "";
+
+  const cleaned =
+   raw
+   .replace(/```json/gi,"")
+   .replace(/```/g,"")
+   .trim();
+
+  const parsed =
+   JSON.parse(cleaned);
+
+  if(
+   !parsed.questions ||
+   !Array.isArray(parsed.questions) ||
+   parsed.questions.length !== 5
+  ){
+
+   throw new Error(
+    "The AI returned an invalid quiz."
+   );
+
+  }
+
+  quizQuestions =
+   parsed.questions;
+
+  quizIndex = 0;
+
+  quizAnswers = [];
+
+  renderQuizQuestion();
+
+ }catch(error){
+
+  console.error(error);
+
+  area.innerHTML = `
+
+   <h2>⚠️ Quiz Error</h2>
+
+   <p class="muted" style="margin-top:10px">
+    ${escapeHTML(error.message)}
+   </p>
+
+   <button
+    class="primary-btn"
+    onclick="startPracticeQuiz()"
+    style="margin-top:15px"
+   >
+    Try Again
+   </button>
+
+  `;
+
+ }
+
+}
+
+
+function renderQuizQuestion(){
+
+ const area =
+  document.getElementById("quizArea");
+
+ if(
+  quizIndex >= quizQuestions.length
+ ){
+
+  finishQuiz();
+
+  return;
+
+ }
+
+ const question =
+  quizQuestions[quizIndex];
+
+ area.innerHTML = `
+
+ <h2>
+ Question ${quizIndex + 1} of ${quizQuestions.length}
+ </h2>
+
+ <p style="
+  font-size:18px;
+  margin-top:18px;
+  line-height:1.6
+ ">
+ ${escapeHTML(question.question)}
+ </p>
+
+ <div class="quiz-options">
+
+ ${question.options.map((option,index)=>`
+
+  <button
+   class="quiz-option"
+   onclick="answerQuiz(${index})"
+  >
+   ${String.fromCharCode(65+index)}.
+   ${escapeHTML(option)}
+  </button>
+
+ `).join("")}
+
+ </div>
+
+ `;
+
+}
+
+
+function answerQuiz(index){
+
+ quizAnswers[quizIndex] =
+  index;
+
+ quizIndex += 1;
+
+ renderQuizQuestion();
+
+}
+
+
+function finishQuiz(){
+
+ let correct = 0;
+
+ quizQuestions.forEach(
+  (question,index)=>{
+
+   if(
+    quizAnswers[index] ===
+    Number(question.answer)
+   ){
+
+    correct++;
+
+   }
+
+  }
+ );
+
+ const percentage =
+  Math.round(
+   correct /
+   quizQuestions.length *
+   100
+  );
+
+ recordScore(
+  percentage,
+  quizSubject
+ );
+
+ const area =
+  document.getElementById("quizArea");
+
+ area.innerHTML = `
+
+ <h2>🎉 Quiz Complete!</h2>
+
+ <div
+  class="number"
+  style="margin-top:15px"
+ >
+  ${percentage}%
+ </div>
+
+ <p class="muted" style="margin-top:8px">
+ You got ${correct} out of
+ ${quizQuestions.length} questions correct.
+ </p>
+
+ <div style="margin-top:20px">
+
+  <button
+   class="primary-btn"
+   onclick="startPracticeQuiz()"
+  >
+   Try Another Quiz
+  </button>
+
+  <button
+   class="secondary-btn"
+   onclick="openPage('progress')"
+   style="margin-left:8px"
+  >
+   View Progress
+  </button>
+
+ </div>
+
+ `;
+
+}
+
+
+/* =========================================================
+   PARENT DASHBOARD
+   ========================================================= */
+
+function openParentDashboard(){
+
+ const pin =
+  document.getElementById("parentPin").value;
+
+ if(pin !== "1234"){
+
+  alert("Incorrect parent PIN.");
+
+  return;
+
+ }
+
+ document.getElementById("parentLocked").style.display =
+  "none";
+
+ document.getElementById("parentDashboard").style.display =
+  "block";
+
+ renderParentDashboard();
+
+}
+
+
+function renderParentDashboard(){
+
+ const average =
+  learningData.scores.length
+  ? Math.round(
+   learningData.scores.reduce(
+    (a,b)=>a+b,
+    0
+   )
+   /
+   learningData.scores.length
+  )
+  : null;
+
+ document.getElementById("parentActivities").textContent =
+  learningData.activities;
+
+ document.getElementById("parentMinutes").textContent =
+  learningData.minutes;
+
+ document.getElementById("parentScore").textContent =
+  average === null
+  ? "—"
+  : average + "%";
+
+ document.getElementById("parentStreak").textContent =
+  learningData.streak;
+
+
+ const goals =
+  document.getElementById("parentGoals");
+
+ if(!learningData.goals.length){
+
+  goals.innerHTML = `
+   <p class="muted">
+    No goals have been created.
+   </p>
+  `;
+
+ }else{
+
+  goals.innerHTML =
+   learningData.goals.map(goal=>{
+
+    const percent =
+     Math.min(
+      100,
+      Math.round(
+       goal.progress /
+       goal.target *
+       100
+      )
+     );
+
+    return `
+
+    <div class="parent-item">
+
+     <strong>
+      ${escapeHTML(goal.name)}
+     </strong>
+
+     <p class="muted" style="margin-top:6px">
+      ${goal.progress} / ${goal.target}
+      (${percent}%)
+     </p>
+
+     <div class="progress-bar">
+
+      <div
+       class="progress-fill"
+       style="width:${percent}%"
+      ></div>
+
+     </div>
+
+    </div>
+
+    `;
+
+   }).join("");
+
+ }
+
+
+ const history =
+  document.getElementById("parentHistory");
+
+ if(!learningData.activityHistory.length){
+
+  history.innerHTML = `
+   <p class="muted">
+    No activity recorded yet.
+   </p>
+  `;
+
+ }else{
+
+  history.innerHTML =
+   learningData.activityHistory
+   .slice(0,10)
+   .map(item=>`
+
+    <div class="parent-item">
+
+     <strong>
+      ${escapeHTML(item.type)}
+     </strong>
+
+     <p class="muted" style="margin-top:5px">
+      Subject: ${escapeHTML(item.subject)}
+     </p>
+
+     ${
+      item.score !== undefined
+      ? `
+       <p style="margin-top:5px">
+        Score: <strong>${item.score}%</strong>
+       </p>
+      `
+      : ""
+     }
+
+     <p class="muted" style="margin-top:5px">
+      ${escapeHTML(item.date)}
+     </p>
+
+    </div>
+
+   `).join("");
+
+ }
+
+}
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+function saveSettings(){
+
+ localStorage.setItem(
+  "learnAILanguage",
+  document.getElementById("language").value
+ );
+
+ localStorage.setItem(
+  "learnAILevel",
+  document.getElementById("level").value
+ );
+
+}
+
+
+function loadSettings(){
+
+ const savedLanguage =
+  localStorage.getItem(
+   "learnAILanguage"
+  );
+
+ const savedLevel =
+  localStorage.getItem(
+   "learnAILevel"
+  );
+
+ if(savedLanguage){
+
+  document.getElementById("language").value =
+   savedLanguage;
+
+ }
+
+ if(savedLevel){
+
+  document.getElementById("level").value =
+   savedLevel;
+
+ }
+
+ const savedName =
+  localStorage.getItem(
+   "learnAIStudentName"
+  );
+
+ if(savedName){
+
+  document.getElementById("accountName").textContent =
+   savedName;
+
+ }
+
+}
+
 
 function toggleDarkMode(checkbox){
 
@@ -2848,11 +3814,39 @@ function toggleDarkMode(checkbox){
   checkbox.checked
  );
 
+ localStorage.setItem(
+  "learnAIDarkMode",
+  checkbox.checked
+ );
+
+}
+
+
+function loadDarkMode(){
+
+ const saved =
+  localStorage.getItem(
+   "learnAIDarkMode"
+  );
+
+ if(saved === "true"){
+
+  document.body.classList.add("dark");
+
+  const checkbox =
+   document.getElementById("darkMode");
+
+  if(checkbox){
+   checkbox.checked = true;
+  }
+
+ }
+
 }
 
 
 /* =========================================================
-   SECURITY / HTML ESCAPING
+   SECURITY
    ========================================================= */
 
 function escapeHTML(text){
@@ -2860,16 +3854,69 @@ function escapeHTML(text){
  const div =
   document.createElement("div");
 
-
  div.textContent =
   String(text);
-
 
  return div.innerHTML;
 
 }
 
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+window.addEventListener(
+ "load",
+ function(){
+
+  loadDarkMode();
+
+  updateProgress();
+
+  renderGoals();
+
+  renderConversationHistory();
+
+ }
+);
+async function checkExistingSession(){
+
+ const { data:{ session } } =
+  await supabaseClient.auth.getSession();
+
+ if(session){
+
+  currentUser = session.user;
+
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  const studentName =
+   currentUser.user_metadata?.name ||
+   currentUser.email ||
+   "Student";
+
+  document.getElementById("accountName").textContent =
+   studentName;
+
+  loadSettings();
+  updateProgress();
+  renderGoals();
+  renderConversationHistory();
+
+ }else{
+
+  document.getElementById("app").style.display = "none";
+  document.getElementById("auth").style.display = "flex";
+
+ }
+
+}
+
+checkExistingSession();
 </script>
 
 </body>
 </html>
+````
