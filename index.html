@@ -1153,6 +1153,15 @@ when web search is enabled on the AI backend.
 >
 
 <button
+ class="secondary-btn"
+ id="micButton"
+ onclick="startVoiceInput()"
+ type="button"
+>
+🎤
+</button>
+
+<button
  class="primary-btn"
  onclick="sendMessage()"
 >
@@ -2283,7 +2292,73 @@ function handleEnter(event){
  }
 
 }
+ 
+/* =========================================================
+   VOICE INPUT
+   ========================================================= */
 
+let recognition = null;
+
+function startVoiceInput(){
+
+ if(!("webkitSpeechRecognition" in window) &&
+    !("SpeechRecognition" in window)){
+
+  alert("Voice input is not supported in this browser.");
+  return;
+
+ }
+
+ const SpeechRecognition =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+ recognition = new SpeechRecognition();
+
+ recognition.lang =
+  document.getElementById("language").value === "French"
+  ? "fr-FR"
+  : document.getElementById("language").value === "Spanish"
+  ? "es-ES"
+  : document.getElementById("language").value === "Portuguese"
+  ? "pt-PT"
+  : "en-US";
+
+ recognition.interimResults = false;
+ recognition.continuous = false;
+
+ const button =
+  document.getElementById("micButton");
+
+ button.textContent = "🔴";
+
+ recognition.onresult = function(event){
+
+  const text =
+   event.results[0][0].transcript;
+
+  document.getElementById("question").value =
+   text;
+
+  button.textContent = "🎤";
+
+ };
+
+ recognition.onerror = function(){
+
+  button.textContent = "🎤";
+
+ };
+
+ recognition.onend = function(){
+
+  button.textContent = "🎤";
+
+ };
+
+ recognition.start();
+
+}
 
 /* =========================================================
    NEW CHAT
