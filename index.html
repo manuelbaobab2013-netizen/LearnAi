@@ -2419,6 +2419,9 @@ async function createGeneratedMaterial(){
 
  const subject =
   document.getElementById("generatorSubject").value;
+ 
+ const grade =
+  document.getElementById("generatorGrade").value;
 
 
  const topic =
@@ -2433,8 +2436,8 @@ async function createGeneratedMaterial(){
   document.getElementById("generatorDifficulty").value;
 
 
- const language =
-  document.getElementById("language").value;
+const language =
+  document.getElementById("generatorLanguage").value;
 
 
  const box =
@@ -2490,6 +2493,9 @@ async function createGeneratedMaterial(){
  const prompt = `
 
 Create a ${generatorType} for a student.
+
+GRADE:
+${grade}
 
 SUBJECT:
 ${subject}
