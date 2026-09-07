@@ -1,3 +1,14 @@
+```javascript
+const MAX_AI_CHATS = 250;
+
+// Change this to the cooldown you want.
+// 3 days = 3 * 24 * 60 * 60 * 1000
+const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
+
+// Temporary server-side usage storage.
+// For permanent per-user limits, move this to Supabase.
+const usage = new Map();
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -20,6 +31,99 @@ export default async function handler(req, res) {
       });
     }
 
+    /*
+      Identify the user.
+
+      If your frontend later sends a real Supabase user ID,
+      use that instead of the IP address.
+    */
+    const userId =
+      req.headers["x-user-id"] ||
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      "unknown-user";
+
+    let userUsage = usage.get(userId);
+
+    if (!userUsage) {
+      userUsage = {
+        count: 0,
+        cooldownUntil: null
+      };
+
+      usage.set(userId, userUsage);
+    }
+
+    /*
+      Check whether the user is currently in cooldown.
+    */
+    if (
+      userUsage.cooldownUntil &&
+      Date.now() < userUsage.cooldownUntil
+    ) {
+      const remaining =
+        userUsage.cooldownUntil - Date.now();
+
+      const remainingDays =
+        Math.ceil(
+          remaining /
+          (24 * 60 * 60 * 1000)
+        );
+
+      return res.status(429).json({
+        error:
+          `You've used your 250 AI chats. ` +
+          `Your chats will return in about ${remainingDays} day(s).`,
+        limitReached: true,
+        chatsUsed: MAX_AI_CHATS,
+        chatsRemaining: 0,
+        cooldown: true
+      });
+    }
+
+    /*
+      Cooldown finished.
+      Give the user another 250 chats.
+    */
+    if (
+      userUsage.cooldownUntil &&
+      Date.now() >= userUsage.cooldownUntil
+    ) {
+      userUsage.count = 0;
+      userUsage.cooldownUntil = null;
+    }
+
+    /*
+      Check the 250-chat limit BEFORE calling OpenAI.
+    */
+    if (userUsage.count >= MAX_AI_CHATS) {
+      userUsage.cooldownUntil =
+        Date.now() + COOLDOWN_MS;
+
+      return res.status(429).json({
+        error:
+          "You've reached your 250 AI chat limit. " +
+          "Your chats will return after the cooldown.",
+        limitReached: true,
+        chatsUsed: MAX_AI_CHATS,
+        chatsRemaining: 0,
+        cooldown: true
+      });
+    }
+
+    /*
+      Count this AI message.
+
+      This means:
+      1st message = 1
+      2nd message = 2
+      ...
+      250th message = 250
+    */
+    userUsage.count += 1;
+
+    const chatsRemaining =
+      MAX_AI_CHATS - userUsage.count;
+
     const instructions = `
 You are LearnAI, a professional AI tutor.
 
@@ -31,30 +135,23 @@ PERSONALITY
 - Understand spelling mistakes and imperfect grammar.
 - Understand short messages and slang.
 - Focus on what the student means.
-
-EMOJIS
-Use emojis naturally and occasionally.
-Do not use emojis in every response.
-Use funny emojis when something is funny 😂.
-Use appropriate emojis for serious or difficult situations.
-Do not overuse emojis.
 - Answer directly.
 - Do not ask unnecessary questions.
 - If the student asks you to choose one, choose one.
 - Do not repeat the student's question.
 
+EMOJIS
+Use emojis naturally and occasionally.
+Do not use emojis in every response.
+Use funny emojis when something is funny 😂.
+Do not overuse emojis.
+
 WRITING STYLE
 - Use clear normal punctuation.
 - Do not overuse commas.
 - Do not overuse exclamation marks.
-Do not use semicolons in normal answers.
-
-Use commas and full stops instead.
-
-Semicolons are allowed only when writing creative writing,
-stories, or other writing where they are grammatically useful.
+- Do not use semicolons in normal answers.
 - Do not randomly use slashes.
-- Do not use unnecessary symbols.
 - Do not make every answer a long list.
 - Use simple words when possible.
 - Keep simple answers short.
@@ -147,21 +244,9 @@ Use web search for:
 If you do not know who a specific person is, search for them.
 Never invent a person or pretend to know something you do not know.
 
-When web search gives you useful information, explain it naturally.
-
-IMPORTANT WEB RULE:
+IMPORTANT WEB RULE
 Never show URLs, website links, citations, source lists,
 reference links, markdown links or website addresses to the student.
-
-Do not write:
-"According to UEFA..."
-"Sources:"
-"Click here..."
-"[website.com](...)"
-
-Use the information from the search without displaying the sources.
-
-Do not mention that you searched unless it is useful to the conversation.
 
 CONVERSATION
 Use the previous conversation to understand context.
@@ -191,10 +276,15 @@ Use web search when appropriate.
 Never make up facts.
 `;
 
+    /*
+      Only send the most recent 10 messages.
+      This reduces unnecessary token usage while
+      keeping enough context for normal conversation.
+    */
     const messages = [];
 
     if (Array.isArray(history)) {
-      for (const message of history.slice(-20)) {
+      for (const message of history.slice(-10)) {
         if (!message || !message.content) continue;
 
         messages.push({
@@ -239,13 +329,26 @@ Never make up facts.
 
     const data = await response.json();
 
+    /*
+      If OpenAI itself is temporarily rate-limited,
+      do NOT expose the ugly technical error to students.
+    */
     if (!response.ok) {
       console.error("OPENAI ERROR:", data);
 
+      if (response.status === 429) {
+        return res.status(503).json({
+          error:
+            "LearnAI is busy right now. Please try again in a little while.",
+          temporary: true,
+          chatsUsed: userUsage.count,
+          chatsRemaining: chatsRemaining
+        });
+      }
+
       return res.status(response.status).json({
         error:
-          data?.error?.message ||
-          "OpenAI request failed"
+          "LearnAI could not answer right now. Please try again."
       });
     }
 
@@ -273,7 +376,12 @@ Never make up facts.
     }
 
     return res.status(200).json({
-      answer: answer.trim()
+      answer: answer.trim(),
+
+      // Useful for showing the student their remaining chats.
+      chatsUsed: userUsage.count,
+      chatsRemaining: chatsRemaining,
+      limit: MAX_AI_CHATS
     });
 
   } catch (error) {
@@ -281,8 +389,8 @@ Never make up facts.
 
     return res.status(500).json({
       error:
-        error?.message ||
-        "Server error"
+        "LearnAI had a problem. Please try again."
     });
   }
 }
+```
