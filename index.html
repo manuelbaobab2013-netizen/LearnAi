@@ -751,7 +751,228 @@ body.dark .progress-bar{
  }
 }
 </style>
+/* ===== LEARNAI MODERN GOALS + PROGRESS ===== */
 
+.goal-card {
+  background: var(--card, #ffffff);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.goal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+}
+
+.goal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.goal-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.goal-type {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.goal-progress {
+  margin-top: 14px;
+}
+
+.goal-progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #e8edf3;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 20px;
+  transition: width 0.5s ease;
+}
+
+.goal-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.goal-go-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 9px 15px;
+  cursor: pointer;
+  font-weight: 700;
+  background: #4f46e5;
+  color: white;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.goal-go-btn:hover {
+  transform: scale(1.04);
+  opacity: 0.9;
+}
+
+.goal-complete {
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.streak-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff8a00, #ff5e00);
+  color: white;
+  box-shadow: 0 8px 24px rgba(255,120,0,0.25);
+}
+
+.streak-number {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.streak-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Progress graph */
+
+.progress-chart {
+  width: 100%;
+  min-height: 300px;
+  background: var(--card, #ffffff);
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.progress-chart svg {
+  width: 100%;
+  height: 250px;
+  overflow: visible;
+}
+
+.progress-line {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.progress-point {
+  stroke-width: 3;
+  r: 5;
+}
+
+.progress-grid {
+  stroke: currentColor;
+  opacity: 0.1;
+  stroke-width: 1;
+}
+
+.progress-label {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.progress-result {
+  margin-top: 15px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(79,70,229,0.08);
+  font-weight: 600;
+}
+
+/* Result feedback */
+
+.result-card {
+  padding: 22px;
+  margin-top: 18px;
+  border-radius: 18px;
+  background: var(--card, #ffffff);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.result-score {
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.result-message {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Settings */
+
+.setting-card {
+  background: var(--card, #ffffff);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.setting-card h3 {
+  margin: 0 0 4px;
+}
+
+.setting-card p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.setting-card select,
+.setting-card input {
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid #d8dee8;
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .goal-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .streak-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .progress-chart {
+    padding: 12px;
+  }
+}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 </head>
