@@ -1556,7 +1556,59 @@ Create a goal to start tracking it.
 
 </div>
 
+<div class="progress-chart">
 
+  <h2>Learning Growth 📈</h2>
+
+  <p class="muted" style="margin:6px 0 15px">
+    Your real results over time
+  </p>
+
+  <svg
+    id="progressGraph"
+    viewBox="0 0 900 280"
+    preserveAspectRatio="none"
+  >
+
+    <path
+      class="progress-grid"
+      d="M50 50 H880"
+    ></path>
+
+    <path
+      class="progress-grid"
+      d="M50 115 H880"
+    ></path>
+
+    <path
+      class="progress-grid"
+      d="M50 180 H880"
+    ></path>
+
+    <path
+      class="progress-grid"
+      d="M50 245 H880"
+    ></path>
+
+    <path
+      id="progressPath"
+      class="progress-line"
+      d=""
+      stroke="#3157d5"
+    ></path>
+
+    <g id="progressPoints"></g>
+
+  </svg>
+
+  <div
+    id="progressGraphMessage"
+    class="progress-result"
+  >
+    Complete a test to start your progress graph.
+  </div>
+
+</div>
 <div class="card">
 
 <h2>Learning Areas</h2>
@@ -4411,9 +4463,8 @@ function updateProgress(){
 
 
  updateGoalDisplay();
-
- updateSubjectProgress();
-
+updateSubjectProgress();
+updateProgressGraph();
 }
 
 
