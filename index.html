@@ -3243,20 +3243,23 @@ async function sendMessage(){
        "application/json"
      },
 
-     body:JSON.stringify({
+  body:JSON.stringify({
 
-      question,
+  question,
 
-      subject:
-       currentSubject,
+  subject:
+   currentSubject,
 
-      level,
+  level,
 
-      language,
+  language,
 
-      history
+  history,
 
-     })
+  userId:
+ currentUser?.id
+
+})
 
     }
    );
