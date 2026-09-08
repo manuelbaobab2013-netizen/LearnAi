@@ -2,11 +2,9 @@
 const MAX_AI_CHATS = 250;
 const COOLDOWN_MS = 2 * 24 * 60 * 60 * 1000;
 
-// Temporary usage storage.
-// This resets if the Vercel server instance restarts.
 const usage = new Map();
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
 
   if (req.method !== "POST") {
@@ -49,23 +47,14 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-     * USER IDENTIFICATION
-     *
-     * If your frontend later sends an account ID,
-     * LearnAI can use that instead of the IP address.
-     */
-    const forwardedFor =
+    const forwarded =
       req.headers["x-forwarded-for"];
-
-    const ip =
-      forwardedFor
-        ? String(forwardedFor).split(",")[0].trim()
-        : "unknown";
 
     const userId =
       req.headers["x-user-id"] ||
-      ip;
+      (forwarded
+        ? String(forwarded).split(",")[0].trim()
+        : "default-user");
 
     let user = usage.get(userId);
 
@@ -78,9 +67,6 @@ export default async function handler(req, res) {
       usage.set(userId, user);
     }
 
-    /*
-     * RESET COOLDOWN
-     */
     if (
       user.cooldownUntil > 0 &&
       Date.now() >= user.cooldownUntil
@@ -89,174 +75,127 @@ export default async function handler(req, res) {
       user.cooldownUntil = 0;
     }
 
-    /*
-     * ACTIVE COOLDOWN
-     */
     if (
       user.cooldownUntil > 0 &&
       Date.now() < user.cooldownUntil
     ) {
-      const remaining =
-        user.cooldownUntil - Date.now();
-
-      const hoursLeft =
-        Math.ceil(
-          remaining / (60 * 60 * 1000)
-        );
+      const hoursLeft = Math.ceil(
+        (user.cooldownUntil - Date.now()) /
+        (60 * 60 * 1000)
+      );
 
       return res.status(429).json({
         error:
-          "You have used all 250 AI chats. " +
-          "Your chats will return in about " +
+          "You have used your 250 AI chats. " +
+          "Your chats return in about " +
           hoursLeft +
           " hour(s).",
-        chatsUsed: MAX_AI_CHATS,
+        chatsUsed: 250,
         chatsRemaining: 0,
-        limit: MAX_AI_CHATS,
-        cooldown: true,
-        cooldownHours: hoursLeft
+        limit: 250,
+        cooldown: true
       });
     }
 
-    /*
-     * 250 CHAT LIMIT
-     */
     if (user.chatsUsed >= MAX_AI_CHATS) {
       user.cooldownUntil =
         Date.now() + COOLDOWN_MS;
 
       return res.status(429).json({
         error:
-          "You have used all 250 AI chats. " +
-          "Your chats will return after 2 days.",
-        chatsUsed: MAX_AI_CHATS,
+          "You have used your 250 AI chats. " +
+          "Your chats return after 2 days.",
+        chatsUsed: 250,
         chatsRemaining: 0,
-        limit: MAX_AI_CHATS,
+        limit: 250,
         cooldown: true
       });
     }
 
-    /*
-     * LEARNAI INSTRUCTIONS
-     */
     const instructions = [
       "You are LearnAI, a friendly professional AI tutor.",
       "",
-      "CORE PURPOSE:",
-      "Always try to help the student with what they need.",
-      "Be useful, patient, encouraging and respectful.",
-      "Do not refuse simply because the question is outside the selected subject.",
+      "Your main purpose is to help students.",
+      "Always try to help with what the student needs.",
+      "You can help with any reasonable subject or topic.",
       "If the student changes topic, help with the new topic.",
       "",
       "PERSONALITY:",
-      "- Be friendly and natural.",
-      "- Be patient with mistakes.",
-      "- Understand spelling mistakes and imperfect grammar.",
-      "- Understand short messages and slang.",
-      "- Answer directly.",
-      "- Do not ask unnecessary questions.",
-      "- If the student asks you to choose one, choose one.",
-      "- Do not repeat the student's question unnecessarily.",
+      "Be friendly, patient, encouraging and natural.",
+      "Understand spelling mistakes, short messages and slang.",
+      "Never make the student feel stupid for making a mistake.",
+      "Answer directly when the question is clear.",
+      "Do not ask unnecessary questions.",
+      "If the student asks you to choose one, choose one.",
       "",
       "EMOJIS:",
-      "- Use emojis naturally.",
-      "- Do not use emojis in every sentence.",
-      "- Use encouraging emojis when appropriate.",
-      "- Use funny emojis when something is genuinely funny.",
+      "Use emojis naturally and occasionally.",
+      "Do not put emojis in every sentence.",
+      "Use encouraging emojis when appropriate.",
       "",
-      "STUDENT:",
-      "Current level: " + level,
-      "Current subject: " + subject,
-      "Preferred language: " + language,
+      "STUDENT LEVEL:",
+      "The student's current level is " + level + ".",
+      "Adapt explanations to that level.",
       "",
-      "Adapt explanations to the student's level.",
-      "",
-      "GRADE 1-3:",
-      "Use very simple words and easy examples.",
-      "",
-      "GRADE 4-6:",
-      "Use clear school-level explanations and examples.",
-      "",
-      "GRADE 7-9:",
-      "Use more detailed explanations and correct vocabulary.",
-      "",
-      "GRADE 10-12:",
-      "Use advanced explanations and proper terminology.",
+      "SUBJECT:",
+      "The selected subject is " + subject + ".",
+      "However, help with other topics if the student asks.",
       "",
       "TEACHING:",
-      "- Explain the idea clearly.",
-      "- Explain why it works.",
-      "- Give an example when useful.",
-      "- Give steps when useful.",
-      "- Give practice questions when requested.",
-      "- Never make the student feel stupid for making a mistake.",
+      "Explain ideas clearly.",
+      "Explain why things work.",
+      "Give examples when useful.",
+      "Show steps when useful.",
+      "Give practice questions when requested.",
       "",
       "MATHEMATICS:",
-      "- Show important working.",
-      "- Explain the method.",
-      "- Check calculations.",
-      "- Give the final answer clearly.",
+      "Show important working.",
+      "Explain the method.",
+      "Check calculations.",
+      "Give the final answer clearly.",
       "",
       "SCIENCE:",
-      "- Explain what happens.",
-      "- Explain why it happens.",
-      "- Use everyday examples when useful.",
+      "Explain what happens and why.",
+      "Use everyday examples when useful.",
       "",
       "ENGLISH:",
-      "- Explain grammar clearly.",
-      "- Explain vocabulary clearly.",
-      "- Give useful examples.",
+      "Explain grammar and vocabulary clearly.",
+      "Give examples.",
       "",
       "CHESS:",
-      "- Explain tactics and strategy clearly.",
-      "- Explain mistakes constructively.",
-      "- Never pretend to see a chess position that was not provided.",
+      "Explain tactics, strategy and mistakes clearly.",
+      "Never pretend to see a chess position that was not provided.",
       "",
-      "LEARNING SUPPORT:",
-      "- Encourage the student after good work.",
-      "- If the student struggles, explain the mistake and help them improve.",
-      "- Do not guess a student's ability or progress.",
-      "- Only use actual scores or completed activities when discussing results.",
+      "LEARNING:",
+      "Encourage students after good work.",
+      "When they struggle, explain the mistake and help them improve.",
+      "Never guess a student's progress.",
+      "Only discuss actual results when results are provided.",
       "",
       "CURRENT INFORMATION:",
-      "Use web search when current or specific information is needed.",
+      "Use web search when current or changing information is needed.",
       "Never invent facts.",
-      "If you are unsure about a current fact, search for it.",
       "",
       "WEB SEARCH:",
-      "Use search when information may have changed recently.",
-      "Do not unnecessarily discuss the search process.",
-      "Do not show URLs, citations, source lists or website addresses to the student.",
-      "",
-      "CONVERSATION:",
-      "Use the previous messages to understand context.",
-      "Remember what the student was discussing.",
-      "Keep answers connected to the conversation.",
+      "Do not show URLs, citations or source lists to the student.",
       "",
       "LANGUAGE:",
       "Answer in " + language + ".",
-      "If the student clearly asks for another language, use that language.",
+      "If the student clearly requests another language, use it.",
       "",
       "SAFETY:",
       "Keep responses appropriate for students.",
       "Do not provide dangerous or illegal instructions.",
-      "When a request is unsafe, stay supportive and provide a safe alternative.",
+      "When something is unsafe, remain supportive and offer a safe alternative.",
       "",
       "IMPORTANT:",
       "Help the student understand, not just receive an answer.",
       "Never make up information."
     ].join("\n");
 
-    /*
-     * KEEP ONLY RECENT CONVERSATION
-     *
-     * This saves tokens while preserving context.
-     */
     const messages = [];
 
-    for (
-      const message of history.slice(-10)
-    ) {
+    for (const message of history.slice(-10)) {
       if (
         !message ||
         typeof message.content !== "string" ||
@@ -274,17 +213,11 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-     * CURRENT QUESTION
-     */
     messages.push({
       role: "user",
       content: question
     });
 
-    /*
-     * OPENAI REQUEST
-     */
     const openaiResponse = await fetch(
       "https://api.openai.com/v1/responses",
       {
@@ -308,19 +241,16 @@ export default async function handler(req, res) {
       }
     );
 
-    /*
-     * READ OPENAI RESPONSE SAFELY
-     */
     const responseText =
       await openaiResponse.text();
 
-    let data = null;
+    let data;
 
     try {
       data = JSON.parse(responseText);
     } catch (error) {
       console.error(
-        "OPENAI NON-JSON RESPONSE:",
+        "OPENAI RESPONSE WAS NOT JSON:",
         responseText
       );
 
@@ -330,9 +260,6 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-     * OPENAI ERROR
-     */
     if (!openaiResponse.ok) {
       console.error(
         "OPENAI ERROR:",
@@ -350,13 +277,10 @@ export default async function handler(req, res) {
       return res.status(503).json({
         error:
           "LearnAI could not answer right now. Please try again.",
-        temporary: true
+          temporary: true
       });
     }
 
-    /*
-     * GET ANSWER
-     */
     let answer =
       typeof data.output_text === "string"
         ? data.output_text
@@ -368,9 +292,7 @@ export default async function handler(req, res) {
     ) {
       const parts = [];
 
-      for (
-        const item of data.output
-      ) {
+      for (const item of data.output) {
         if (
           !item ||
           item.type !== "message" ||
@@ -379,9 +301,7 @@ export default async function handler(req, res) {
           continue;
         }
 
-        for (
-          const content of item.content
-        ) {
+        for (const content of item.content) {
           if (
             content &&
             content.type === "output_text" &&
@@ -396,26 +316,14 @@ export default async function handler(req, res) {
     }
 
     if (!answer.trim()) {
-      console.error(
-        "OPENAI RETURNED NO ANSWER:",
-        JSON.stringify(data)
-      );
-
       return res.status(503).json({
         error:
-          "LearnAI did not return an answer. Please try again.",
-        temporary: true
+          "LearnAI did not return an answer. Please try again."
       });
     }
 
-    /*
-     * COUNT ONLY SUCCESSFUL AI CHATS
-     */
     user.chatsUsed += 1;
 
-    /*
-     * START 2-DAY COOLDOWN AFTER CHAT 250
-     */
     if (
       user.chatsUsed >= MAX_AI_CHATS
     ) {
@@ -423,17 +331,13 @@ export default async function handler(req, res) {
         Date.now() + COOLDOWN_MS;
     }
 
-    /*
-     * SUCCESS
-     */
     return res.status(200).json({
       answer: answer.trim(),
       chatsUsed: user.chatsUsed,
       chatsRemaining:
         Math.max(
           0,
-          MAX_AI_CHATS -
-            user.chatsUsed
+          MAX_AI_CHATS - user.chatsUsed
         ),
       limit: MAX_AI_CHATS,
       cooldown:
@@ -452,5 +356,5 @@ export default async function handler(req, res) {
       temporary: true
     });
   }
-}
+};
 ```
