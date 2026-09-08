@@ -3238,10 +3238,12 @@ async function sendMessage(){
 
      method:"POST",
 
-     headers:{
-      "Content-Type":
-       "application/json"
-     },
+    headers:{
+  "Content-Type":"application/json",
+  "Authorization":
+   "Bearer " +
+   (await supabaseClient.auth.getSession()).data.session?.access_token
+},
 
   body:JSON.stringify({
 
@@ -3256,8 +3258,6 @@ async function sendMessage(){
 
   history,
 
-  userId:
- currentUser?.id
 
 })
 
