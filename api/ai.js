@@ -12,7 +12,21 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = req.body || {};
+  const supabaseUrl =
+      process.env.SUPABASE_URL;
 
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    const openaiKey =
+      process.env.OPENAI_API_KEY;
+
+    if (!supabaseUrl || !supabaseKey || !openaiKey) {
+      return res.status(500).json({
+        error:
+          "Server environment variables are missing."
+      });
+    }
     const question =
       typeof body.question === "string"
         ? body.question.trim()
@@ -24,16 +38,47 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const userId =
-      typeof body.userId === "string"
-        ? body.userId.trim()
-        : "";
+const authHeader =
+  req.headers.authorization || "";
 
-    if (!userId) {
-      return res.status(400).json({
-        error: "User ID is required"
-      });
+if (!authHeader.startsWith("Bearer ")) {
+  return res.status(401).json({
+    error: "You must be logged in."
+  });
+}
+
+const accessToken =
+  authHeader.slice(7);
+
+const authResponse =
+  await fetch(
+    supabaseUrl + "/auth/v1/user",
+    {
+      headers: {
+        apikey: supabaseKey,
+        Authorization:
+          "Bearer " + accessToken
+      }
     }
+  );
+
+if (!authResponse.ok) {
+  return res.status(401).json({
+    error: "Your login session is invalid or expired."
+  });
+}
+
+const authUser =
+  await authResponse.json();
+
+const userId =
+  authUser.id;
+
+if (!userId) {
+  return res.status(401).json({
+    error: "Could not verify your account."
+  });
+}
 
     const subject =
       typeof body.subject === "string"
@@ -55,21 +100,7 @@ module.exports = async function handler(req, res) {
         ? body.history
         : [];
 
-    const supabaseUrl =
-      process.env.SUPABASE_URL;
-
-    const supabaseKey =
-      process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    const openaiKey =
-      process.env.OPENAI_API_KEY;
-
-    if (!supabaseUrl || !supabaseKey || !openaiKey) {
-      return res.status(500).json({
-        error:
-          "Server environment variables are missing."
-      });
-    }
+  
 
     const now = Date.now();
 
