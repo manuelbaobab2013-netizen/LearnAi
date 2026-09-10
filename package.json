@@ -1,0 +1,9 @@
+{
+  "name": "learnai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LearnAI educational platform",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4"
+  }
+}
