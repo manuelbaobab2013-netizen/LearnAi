@@ -1,3 +1,5 @@
+const { createClient } = require("@supabase/supabase-js");
+
 const MAX_AI_CHATS = 250;
 const COOLDOWN_MS = 2 * 24 * 60 * 60 * 1000;
 
@@ -13,23 +15,15 @@ module.exports = async function handler(req, res) {
   try {
     const body = req.body || {};
 
-    const supabaseUrl =
-      process.env.SUPABASE_URL;
-
+    const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseServiceKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     const supabaseAnonKey =
       process.env.SUPABASE_ANON_KEY ||
-      process.env.SUPABASE_PUBLISHABLE_KEY ||
-      supabaseServiceKey;
+      process.env.SUPABASE_PUBLISHABLE_KEY;
 
-    const openaiKey =
-      process.env.OPENAI_API_KEY;
-
-    /* -----------------------------------------
-       ENVIRONMENT CHECK
-    ----------------------------------------- */
+    const openaiKey = process.env.OPENAI_API_KEY;
 
     if (!supabaseUrl) {
       return res.status(500).json({
@@ -39,15 +33,20 @@ module.exports = async function handler(req, res) {
 
     if (!supabaseServiceKey) {
       return res.status(500).json({
+        error: "SUPABASE_SERVICE_ROLE_KEY is missing in Vercel."
+      });
+    }
+
+    if (!supabaseAnonKey) {
+      return res.status(500).json({
         error:
-          "SUPABASE_SERVICE_ROLE_KEY is missing in Vercel."
+          "SUPABASE_ANON_KEY or SUPABASE_PUBLISHABLE_KEY is missing in Vercel."
       });
     }
 
     if (!openaiKey) {
       return res.status(500).json({
-        error:
-          "OPENAI_API_KEY is missing in Vercel."
+        error: "OPENAI_API_KEY is missing in Vercel."
       });
     }
 
@@ -75,51 +74,46 @@ module.exports = async function handler(req, res) {
 
     if (!authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        error:
-          "You must be logged in to use LearnAI."
+        error: "You must be logged in to use LearnAI."
       });
     }
 
     const accessToken =
-      authHeader.substring(7).trim();
+      authHeader.slice(7).trim();
 
     if (!accessToken) {
       return res.status(401).json({
-        error:
-          "Your login session is missing."
+        error: "Your login session is missing."
       });
     }
 
     /*
-     * Verify the student's Supabase session.
-     *
      * IMPORTANT:
-     * The user's access token goes in Authorization.
-     * The Supabase project key goes in apikey.
+     * Verify the access token using the Supabase client.
+     * The service-role client is NOT used to authenticate
+     * the student's token.
      */
 
-    const authResponse =
-      await fetch(
-        supabaseUrl.replace(/\/$/, "") +
-          "/auth/v1/user",
-        {
-          method: "GET",
-
-          headers: {
-            apikey: supabaseAnonKey,
-            Authorization:
-              "Bearer " + accessToken
-          }
+    const supabaseAuth = createClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false
         }
-      );
+      }
+    );
 
-    if (!authResponse.ok) {
-      const authText =
-        await authResponse.text();
+    const {
+      data: authData,
+      error: authError
+    } = await supabaseAuth.auth.getUser(accessToken);
 
+    if (authError || !authData?.user) {
       console.error(
-        "SUPABASE AUTH ERROR:",
-        authText
+        "SUPABASE TOKEN ERROR:",
+        authError?.message || "No user returned"
       );
 
       return res.status(401).json({
@@ -128,18 +122,7 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    const authUser =
-      await authResponse.json();
-
-    const userId =
-      authUser?.id;
-
-    if (!userId) {
-      return res.status(401).json({
-        error:
-          "Could not verify your LearnAI account."
-      });
-    }
+    const userId = authData.user.id;
 
     /* -----------------------------------------
        STUDENT SETTINGS
@@ -157,6 +140,12 @@ module.exports = async function handler(req, res) {
         ? body.level.trim()
         : "Grade 6";
 
+    const grade =
+      typeof body.grade === "string" &&
+      body.grade.trim()
+        ? body.grade.trim()
+        : level;
+
     const language =
       typeof body.language === "string" &&
       body.language.trim()
@@ -169,11 +158,24 @@ module.exports = async function handler(req, res) {
         : [];
 
     /* -----------------------------------------
+       SUPABASE REST BASE
+    ----------------------------------------- */
+
+    const baseUrl =
+      supabaseUrl.replace(/\/$/, "");
+
+    const serviceHeaders = {
+      apikey: supabaseServiceKey,
+      Authorization:
+        "Bearer " + supabaseServiceKey
+    };
+
+    /* -----------------------------------------
        AI USAGE
     ----------------------------------------- */
 
     const usageUrl =
-      supabaseUrl.replace(/\/$/, "") +
+      baseUrl +
       "/rest/v1/ai_usage?user_id=eq." +
       encodeURIComponent(userId) +
       "&select=*";
@@ -181,22 +183,13 @@ module.exports = async function handler(req, res) {
     const usageResponse =
       await fetch(usageUrl, {
         method: "GET",
-
-        headers: {
-          apikey: supabaseServiceKey,
-          Authorization:
-            "Bearer " +
-            supabaseServiceKey
-        }
+        headers: serviceHeaders
       });
 
     if (!usageResponse.ok) {
-      const text =
-        await usageResponse.text();
-
       console.error(
         "AI USAGE READ ERROR:",
-        text
+        await usageResponse.text()
       );
 
       return res.status(500).json({
@@ -208,8 +201,7 @@ module.exports = async function handler(req, res) {
     let rows =
       await usageResponse.json();
 
-    let usage =
-      rows[0];
+    let usage = rows[0];
 
     /* -----------------------------------------
        CREATE USAGE RECORD
@@ -218,42 +210,30 @@ module.exports = async function handler(req, res) {
     if (!usage) {
       const createResponse =
         await fetch(
-          supabaseUrl.replace(/\/$/, "") +
-            "/rest/v1/ai_usage",
+          baseUrl + "/rest/v1/ai_usage",
           {
             method: "POST",
 
             headers: {
+              ...serviceHeaders,
               "Content-Type":
                 "application/json",
-
-              apikey:
-                supabaseServiceKey,
-
-              Authorization:
-                "Bearer " +
-                supabaseServiceKey,
-
               Prefer:
                 "return=representation"
             },
 
-            body:
-              JSON.stringify({
-                user_id: userId,
-                chat_count: 0,
-                cooldown_until: null
-              })
+            body: JSON.stringify({
+              user_id: userId,
+              chat_count: 0,
+              cooldown_until: null
+            })
           }
         );
 
       if (!createResponse.ok) {
-        const text =
-          await createResponse.text();
-
         console.error(
           "AI USAGE CREATE ERROR:",
-          text
+          await createResponse.text()
         );
 
         return res.status(500).json({
@@ -265,12 +245,10 @@ module.exports = async function handler(req, res) {
       rows =
         await createResponse.json();
 
-      usage =
-        rows[0];
+      usage = rows[0];
     }
 
-    const now =
-      Date.now();
+    const now = Date.now();
 
     /* -----------------------------------------
        COOLDOWN
@@ -299,44 +277,39 @@ module.exports = async function handler(req, res) {
             " hours.",
 
           chatsRemaining: 0,
-
           cooldown: true
         });
       }
 
-      /* ---------------------------------------
-         COOLDOWN FINISHED
-      --------------------------------------- */
+      /* Reset after cooldown */
 
       const resetResponse =
         await fetch(
-          supabaseUrl.replace(/\/$/, "") +
+          baseUrl +
             "/rest/v1/ai_usage?user_id=eq." +
             encodeURIComponent(userId),
           {
             method: "PATCH",
 
             headers: {
+              ...serviceHeaders,
               "Content-Type":
-                "application/json",
-
-              apikey:
-                supabaseServiceKey,
-
-              Authorization:
-                "Bearer " +
-                supabaseServiceKey
+                "application/json"
             },
 
-            body:
-              JSON.stringify({
-                chat_count: 0,
-                cooldown_until: null
-              })
+            body: JSON.stringify({
+              chat_count: 0,
+              cooldown_until: null
+            })
           }
         );
 
       if (!resetResponse.ok) {
+        console.error(
+          "AI USAGE RESET ERROR:",
+          await resetResponse.text()
+        );
+
         return res.status(500).json({
           error:
             "Could not reset your AI chats."
@@ -352,43 +325,31 @@ module.exports = async function handler(req, res) {
     ----------------------------------------- */
 
     const currentCount =
-      Number(
-        usage.chat_count || 0
-      );
+      Number(usage.chat_count || 0);
 
-    if (
-      currentCount >=
-      MAX_AI_CHATS
-    ) {
+    if (currentCount >= MAX_AI_CHATS) {
       const cooldownUntil =
         new Date(
           now + COOLDOWN_MS
         ).toISOString();
 
       await fetch(
-        supabaseUrl.replace(/\/$/, "") +
+        baseUrl +
           "/rest/v1/ai_usage?user_id=eq." +
           encodeURIComponent(userId),
         {
           method: "PATCH",
 
           headers: {
+            ...serviceHeaders,
             "Content-Type":
-              "application/json",
-
-            apikey:
-              supabaseServiceKey,
-
-            Authorization:
-              "Bearer " +
-              supabaseServiceKey
+              "application/json"
           },
 
-          body:
-            JSON.stringify({
-              cooldown_until:
-                cooldownUntil
-            })
+          body: JSON.stringify({
+            cooldown_until:
+              cooldownUntil
+          })
         }
       );
 
@@ -397,7 +358,6 @@ module.exports = async function handler(req, res) {
           "You have used your 250 AI chats. Please wait 2 days for your chats to reset.",
 
         chatsRemaining: 0,
-
         cooldown: true
       });
     }
@@ -411,16 +371,18 @@ You are LearnAI, a professional AI tutor.
 
 You help students from Grade 1 through Grade 12.
 
-CURRENT STUDENT LEVEL:
+STUDENT GRADE:
+${grade}
+
+STUDENT LEVEL:
 ${level}
 
-CURRENT SUBJECT:
+SUBJECT:
 ${subject}
 
-CURRENT LANGUAGE:
+LANGUAGE:
 ${language}
 
-LANGUAGE:
 Answer in ${language}, unless the student clearly asks for another language.
 
 PERSONALITY:
@@ -434,7 +396,6 @@ PERSONALITY:
 - If the student asks you to choose one thing, choose one clearly.
 
 TEACHING:
-When teaching:
 1. Explain the idea.
 2. Explain why it works.
 3. Give an example.
@@ -462,21 +423,6 @@ CHESS:
 CURRENT INFORMATION:
 Use web search when current information is needed.
 
-This includes:
-- current news
-- recent events
-- sports
-- football
-- basketball
-- chess
-- current players
-- current teams
-- current records
-- technology
-- famous people
-- recent discoveries
-- anything that may have changed recently
-
 Never invent facts.
 
 STYLE:
@@ -484,8 +430,6 @@ STYLE:
 - Give more detail when necessary.
 - Use normal punctuation.
 - Do not overuse emojis.
-- Use emojis naturally when appropriate.
-- Do not use unnecessary symbols.
 - Do not make every answer a huge list.
 
 SAFETY:
@@ -503,27 +447,23 @@ Never pretend to know something when you are unsure.
 
     const messages = [];
 
-    for (
-      const message of history.slice(-10)
-    ) {
+    for (const message of history.slice(-10)) {
       if (
         !message ||
-        !message.content
+        typeof message.content !== "string" ||
+        !message.content.trim()
       ) {
         continue;
       }
 
       messages.push({
         role:
-          message.role ===
-          "assistant"
+          message.role === "assistant"
             ? "assistant"
             : "user",
 
         content:
-          String(
-            message.content
-          )
+          message.content
       });
     }
 
@@ -547,28 +487,24 @@ Never pretend to know something when you are unsure.
               "application/json",
 
             Authorization:
-              "Bearer " +
-              openaiKey
+              "Bearer " + openaiKey
           },
 
-          body:
-            JSON.stringify({
-              model:
-                "gpt-5.6-luna",
+          body: JSON.stringify({
+            model: "gpt-5.6-luna",
 
-              instructions:
-                instructions,
+            instructions:
+              instructions,
 
-              input:
-                messages,
+            input:
+              messages,
 
-              tools: [
-                {
-                  type:
-                    "web_search"
-                }
-              ]
-            })
+            tools: [
+              {
+                type: "web_search"
+              }
+            ]
+          })
         }
       );
 
@@ -603,16 +539,13 @@ Never pretend to know something when you are unsure.
 
     if (
       !answer &&
-      Array.isArray(
-        data.output
-      )
+      Array.isArray(data.output)
     ) {
       answer =
         data.output
           .filter(
             item =>
-              item.type ===
-              "message"
+              item.type === "message"
           )
           .flatMap(
             item =>
@@ -620,8 +553,7 @@ Never pretend to know something when you are unsure.
           )
           .filter(
             item =>
-              item.type ===
-              "output_text"
+              item.type === "output_text"
           )
           .map(
             item =>
@@ -654,13 +586,9 @@ Never pretend to know something when you are unsure.
     const newCount =
       currentCount + 1;
 
-    let cooldownUntil =
-      null;
+    let cooldownUntil = null;
 
-    if (
-      newCount >=
-      MAX_AI_CHATS
-    ) {
+    if (newCount >= MAX_AI_CHATS) {
       cooldownUntil =
         new Date(
           now + COOLDOWN_MS
@@ -669,32 +597,23 @@ Never pretend to know something when you are unsure.
 
     const updateResponse =
       await fetch(
-        supabaseUrl.replace(/\/$/, "") +
+        baseUrl +
           "/rest/v1/ai_usage?user_id=eq." +
           encodeURIComponent(userId),
         {
           method: "PATCH",
 
           headers: {
+            ...serviceHeaders,
             "Content-Type":
-              "application/json",
-
-            apikey:
-              supabaseServiceKey,
-
-            Authorization:
-              "Bearer " +
-              supabaseServiceKey
+              "application/json"
           },
 
-          body:
-            JSON.stringify({
-              chat_count:
-                newCount,
-
-              cooldown_until:
-                cooldownUntil
-            })
+          body: JSON.stringify({
+            chat_count: newCount,
+            cooldown_until:
+              cooldownUntil
+          })
         }
       );
 
@@ -710,19 +629,16 @@ Never pretend to know something when you are unsure.
     ----------------------------------------- */
 
     return res.status(200).json({
-      answer:
-        answer.trim(),
+      answer: answer.trim(),
 
       chatsRemaining:
         Math.max(
           0,
-          MAX_AI_CHATS -
-            newCount
+          MAX_AI_CHATS - newCount
         ),
 
       cooldown:
-        newCount >=
-        MAX_AI_CHATS
+        newCount >= MAX_AI_CHATS
     });
 
   } catch (error) {
