@@ -472,7 +472,8 @@ Never pretend to know something when you are unsure.
       content: question
     });
 
-    /* -----------------------------------------
+
+       /* -----------------------------------------
        OPENAI
     ----------------------------------------- */
 
@@ -483,30 +484,32 @@ Never pretend to know something when you are unsure.
           method: "POST",
 
           headers: {
-            "Content-Type":
-              "application/json",
+            "Content-Type": "application/json",
 
             Authorization:
               "Bearer " + openaiKey
           },
-body: JSON.stringify({
-  model: "gpt-5.6-luna",
 
-  instructions: instructions,
+          body: JSON.stringify({
+            model: "gpt-5.6-luna",
 
-  input: messages.slice(-4),
+            instructions: instructions,
 
-  max_output_tokens: 1000,
+            input: messages.slice(-4),
 
-  tools: [
-    {
-      type: "web_search"
-    }
-  ]
-})
+            max_output_tokens: 1000,
+
+            tools: [
+              {
+                type: "web_search"
+              }
+            ]
+          })
+        }
+      );
+
     const data =
       await openaiResponse.json();
-
     /* -----------------------------------------
        OPENAI ERROR
     ----------------------------------------- */
