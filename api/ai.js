@@ -489,25 +489,21 @@ Never pretend to know something when you are unsure.
             Authorization:
               "Bearer " + openaiKey
           },
+body: JSON.stringify({
+  model: "gpt-5.6-luna",
 
-          body: JSON.stringify({
-            model: "gpt-5.6-luna",
+  instructions: instructions,
 
-            instructions:
-              instructions,
+  input: messages.slice(-4),
 
-            input:
-              messages,
+  max_output_tokens: 1000,
 
-            tools: [
-              {
-                type: "web_search"
-              }
-            ]
-          })
-        }
-      );
-
+  tools: [
+    {
+      type: "web_search"
+    }
+  ]
+})
     const data =
       await openaiResponse.json();
 
