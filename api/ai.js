@@ -495,18 +495,12 @@ Never pretend to know something when you are unsure.
 
             instructions: instructions,
 
-            input: messages.slice(-4),
+         input: messages.slice(-2),
 
-            max_output_tokens: 1000,
-
-            tools: [
-              {
-                type: "web_search"
-              }
-            ]
-          })
-        }
-      );
+           max_output_tokens: 600
+            })
+              
+            
 
     const data =
       await openaiResponse.json();
