@@ -12,21 +12,49 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = req.body || {};
-  const supabaseUrl =
+
+    const supabaseUrl =
       process.env.SUPABASE_URL;
 
-    const supabaseKey =
+    const supabaseServiceKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    const supabaseAnonKey =
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
+      supabaseServiceKey;
 
     const openaiKey =
       process.env.OPENAI_API_KEY;
 
-    if (!supabaseUrl || !supabaseKey || !openaiKey) {
+    /* -----------------------------------------
+       ENVIRONMENT CHECK
+    ----------------------------------------- */
+
+    if (!supabaseUrl) {
       return res.status(500).json({
-        error:
-          "Server environment variables are missing."
+        error: "SUPABASE_URL is missing in Vercel."
       });
     }
+
+    if (!supabaseServiceKey) {
+      return res.status(500).json({
+        error:
+          "SUPABASE_SERVICE_ROLE_KEY is missing in Vercel."
+      });
+    }
+
+    if (!openaiKey) {
+      return res.status(500).json({
+        error:
+          "OPENAI_API_KEY is missing in Vercel."
+      });
+    }
+
+    /* -----------------------------------------
+       QUESTION
+    ----------------------------------------- */
+
     const question =
       typeof body.question === "string"
         ? body.question.trim()
@@ -34,65 +62,105 @@ module.exports = async function handler(req, res) {
 
     if (!question) {
       return res.status(400).json({
-        error: "Question is required"
+        error: "Question is required."
       });
     }
 
-const authHeader =
-  req.headers.authorization || "";
+    /* -----------------------------------------
+       AUTHENTICATION
+    ----------------------------------------- */
 
-if (!authHeader.startsWith("Bearer ")) {
-  return res.status(401).json({
-    error: "You must be logged in."
-  });
-}
+    const authHeader =
+      req.headers.authorization || "";
 
-const accessToken =
-  authHeader.slice(7);
-
-const authResponse =
-  await fetch(
-    supabaseUrl + "/auth/v1/user",
-    {
-      headers: {
-        apikey: supabaseKey,
-        Authorization:
-          "Bearer " + accessToken
-      }
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error:
+          "You must be logged in to use LearnAI."
+      });
     }
-  );
 
-if (!authResponse.ok) {
-  return res.status(401).json({
-    error: "Your login session is invalid or expired."
-  });
-}
+    const accessToken =
+      authHeader.substring(7).trim();
 
-const authUser =
-  await authResponse.json();
+    if (!accessToken) {
+      return res.status(401).json({
+        error:
+          "Your login session is missing."
+      });
+    }
 
-const userId =
-  authUser.id;
+    /*
+     * Verify the student's Supabase session.
+     *
+     * IMPORTANT:
+     * The user's access token goes in Authorization.
+     * The Supabase project key goes in apikey.
+     */
 
-if (!userId) {
-  return res.status(401).json({
-    error: "Could not verify your account."
-  });
-}
+    const authResponse =
+      await fetch(
+        supabaseUrl.replace(/\/$/, "") +
+          "/auth/v1/user",
+        {
+          method: "GET",
+
+          headers: {
+            apikey: supabaseAnonKey,
+            Authorization:
+              "Bearer " + accessToken
+          }
+        }
+      );
+
+    if (!authResponse.ok) {
+      const authText =
+        await authResponse.text();
+
+      console.error(
+        "SUPABASE AUTH ERROR:",
+        authText
+      );
+
+      return res.status(401).json({
+        error:
+          "Your login session is invalid or expired. Please log out and log in again."
+      });
+    }
+
+    const authUser =
+      await authResponse.json();
+
+    const userId =
+      authUser?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        error:
+          "Could not verify your LearnAI account."
+      });
+    }
+
+    /* -----------------------------------------
+       STUDENT SETTINGS
+    ----------------------------------------- */
 
     const subject =
-      typeof body.subject === "string"
-        ? body.subject
+      typeof body.subject === "string" &&
+      body.subject.trim()
+        ? body.subject.trim()
         : "General";
 
     const level =
-      typeof body.level === "string"
-        ? body.level
+      typeof body.level === "string" &&
+      body.level.trim()
+        ? body.level.trim()
         : "Grade 6";
 
     const language =
-      typeof body.language === "string"
-        ? body.language
+      typeof body.language === "string" &&
+      body.language.trim()
+        ? body.language.trim()
         : "English";
 
     const history =
@@ -100,37 +168,41 @@ if (!userId) {
         ? body.history
         : [];
 
-  
+    /* -----------------------------------------
+       AI USAGE
+    ----------------------------------------- */
 
-    const now = Date.now();
+    const usageUrl =
+      supabaseUrl.replace(/\/$/, "") +
+      "/rest/v1/ai_usage?user_id=eq." +
+      encodeURIComponent(userId) +
+      "&select=*";
 
-    /*
-     * ------------------------------------------------
-     * AI CHAT LIMIT
-     * 250 messages
-     * Then 2-day cooldown
-     * Then automatic reset
-     * ------------------------------------------------
-     */
+    const usageResponse =
+      await fetch(usageUrl, {
+        method: "GET",
 
-    const usageResponse = await fetch(
-      supabaseUrl +
-        "/rest/v1/ai_usage?user_id=eq." +
-        encodeURIComponent(userId) +
-        "&select=*",
-      {
         headers: {
-          apikey: supabaseKey,
+          apikey: supabaseServiceKey,
           Authorization:
-            "Bearer " + supabaseKey
+            "Bearer " +
+            supabaseServiceKey
         }
-      }
-    );
+      });
 
     if (!usageResponse.ok) {
-      throw new Error(
-        "Could not read AI usage."
+      const text =
+        await usageResponse.text();
+
+      console.error(
+        "AI USAGE READ ERROR:",
+        text
       );
+
+      return res.status(500).json({
+        error:
+          "Could not read your LearnAI usage."
+      });
     }
 
     let rows =
@@ -139,11 +211,14 @@ if (!userId) {
     let usage =
       rows[0];
 
-    if (!usage) {
+    /* -----------------------------------------
+       CREATE USAGE RECORD
+    ----------------------------------------- */
 
+    if (!usage) {
       const createResponse =
         await fetch(
-          supabaseUrl +
+          supabaseUrl.replace(/\/$/, "") +
             "/rest/v1/ai_usage",
           {
             method: "POST",
@@ -153,11 +228,11 @@ if (!userId) {
                 "application/json",
 
               apikey:
-                supabaseKey,
+                supabaseServiceKey,
 
               Authorization:
                 "Bearer " +
-                supabaseKey,
+                supabaseServiceKey,
 
               Prefer:
                 "return=representation"
@@ -165,22 +240,26 @@ if (!userId) {
 
             body:
               JSON.stringify({
-                user_id:
-                  userId,
-
-                chat_count:
-                  0,
-
-                cooldown_until:
-                  null
+                user_id: userId,
+                chat_count: 0,
+                cooldown_until: null
               })
           }
         );
 
       if (!createResponse.ok) {
-        throw new Error(
-          "Could not create AI usage."
+        const text =
+          await createResponse.text();
+
+        console.error(
+          "AI USAGE CREATE ERROR:",
+          text
         );
+
+        return res.status(500).json({
+          error:
+            "Could not create your AI usage record."
+        });
       }
 
       rows =
@@ -190,56 +269,48 @@ if (!userId) {
         rows[0];
     }
 
-    /*
-     * If currently inside cooldown
-     */
+    const now =
+      Date.now();
 
-    if (
-      usage.cooldown_until &&
-      new Date(
-        usage.cooldown_until
-      ).getTime() > now
-    ) {
+    /* -----------------------------------------
+       COOLDOWN
+    ----------------------------------------- */
 
-      const remaining =
+    if (usage.cooldown_until) {
+      const cooldownTime =
         new Date(
           usage.cooldown_until
-        ).getTime() - now;
+        ).getTime();
 
-      const hours =
-        Math.ceil(
-          remaining /
-          (60 * 60 * 1000)
-        );
+      if (cooldownTime > now) {
+        const remaining =
+          cooldownTime - now;
 
-      return res.status(429).json({
-        error:
-          "You have used your 250 AI chats. Your chats reset in about " +
-          hours +
-          " hours.",
+        const hours =
+          Math.ceil(
+            remaining /
+              (60 * 60 * 1000)
+          );
 
-        chatsRemaining:
-          0,
+        return res.status(429).json({
+          error:
+            "You have used your 250 AI chats. Your chats reset in about " +
+            hours +
+            " hours.",
 
-        cooldown: true
-      });
-    }
+          chatsRemaining: 0,
 
-    /*
-     * Cooldown finished
-     * Reset counter
-     */
+          cooldown: true
+        });
+      }
 
-    if (
-      usage.cooldown_until &&
-      new Date(
-        usage.cooldown_until
-      ).getTime() <= now
-    ) {
+      /* ---------------------------------------
+         COOLDOWN FINISHED
+      --------------------------------------- */
 
       const resetResponse =
         await fetch(
-          supabaseUrl +
+          supabaseUrl.replace(/\/$/, "") +
             "/rest/v1/ai_usage?user_id=eq." +
             encodeURIComponent(userId),
           {
@@ -250,51 +321,52 @@ if (!userId) {
                 "application/json",
 
               apikey:
-                supabaseKey,
+                supabaseServiceKey,
 
               Authorization:
                 "Bearer " +
-                supabaseKey
+                supabaseServiceKey
             },
 
             body:
               JSON.stringify({
-                chat_count:
-                  0,
-
-                cooldown_until:
-                  null
+                chat_count: 0,
+                cooldown_until: null
               })
           }
         );
 
       if (!resetResponse.ok) {
-        throw new Error(
-          "Could not reset AI usage."
-        );
+        return res.status(500).json({
+          error:
+            "Could not reset your AI chats."
+        });
       }
 
       usage.chat_count = 0;
       usage.cooldown_until = null;
     }
 
-    /*
-     * If already at 250,
-     * start the 2-day cooldown.
-     */
+    /* -----------------------------------------
+       250 CHAT LIMIT
+    ----------------------------------------- */
+
+    const currentCount =
+      Number(
+        usage.chat_count || 0
+      );
 
     if (
-      Number(usage.chat_count || 0)
-      >= MAX_AI_CHATS
+      currentCount >=
+      MAX_AI_CHATS
     ) {
-
       const cooldownUntil =
         new Date(
           now + COOLDOWN_MS
         ).toISOString();
 
       await fetch(
-        supabaseUrl +
+        supabaseUrl.replace(/\/$/, "") +
           "/rest/v1/ai_usage?user_id=eq." +
           encodeURIComponent(userId),
         {
@@ -305,11 +377,11 @@ if (!userId) {
               "application/json",
 
             apikey:
-              supabaseKey,
+              supabaseServiceKey,
 
             Authorization:
               "Bearer " +
-              supabaseKey
+              supabaseServiceKey
           },
 
           body:
@@ -324,238 +396,116 @@ if (!userId) {
         error:
           "You have used your 250 AI chats. Please wait 2 days for your chats to reset.",
 
-        chatsRemaining:
-          0,
+        chatsRemaining: 0,
 
         cooldown: true
       });
     }
 
-    /*
-     * ------------------------------------------------
-     * LEARNAI TUTOR INSTRUCTIONS
-     * ------------------------------------------------
-     */
+    /* -----------------------------------------
+       LEARNAI INSTRUCTIONS
+    ----------------------------------------- */
 
     const instructions = `
 You are LearnAI, a professional AI tutor.
 
-Your job is to answer questions naturally,
-clearly and intelligently.
-
 You help students from Grade 1 through Grade 12.
 
-PERSONALITY
+CURRENT STUDENT LEVEL:
+${level}
 
+CURRENT SUBJECT:
+${subject}
+
+CURRENT LANGUAGE:
+${language}
+
+LANGUAGE:
+Answer in ${language}, unless the student clearly asks for another language.
+
+PERSONALITY:
 - Be friendly and natural.
-- Understand spelling mistakes and imperfect grammar.
+- Understand spelling mistakes.
 - Understand short messages and slang.
 - Focus on what the student means.
 - Answer directly.
 - Do not ask unnecessary questions.
 - Do not repeat the student's question.
-- If the student asks you to choose one, choose one.
+- If the student asks you to choose one thing, choose one clearly.
 
-EMOJIS
-
-Use emojis naturally and occasionally.
-
-Do not use emojis in every response.
-
-Use funny emojis when something is funny 😂.
-
-Use appropriate emojis for serious or difficult situations.
-
-Do not overuse emojis.
-
-WRITING STYLE
-
-- Use clear normal punctuation.
-- Do not overuse commas.
-- Do not overuse exclamation marks.
-- Do not use semicolons in normal answers.
-- Use commas and full stops instead.
-- Do not randomly use slashes.
-- Do not use unnecessary symbols.
-- Do not make every answer a long list.
-- Use simple words when possible.
-- Keep simple answers short.
-- Give more detail when the question needs it.
-- Make answers feel like a normal conversation.
-
-STUDENT LEVEL
-
-Current student level:
-${level}
-
-Adapt your explanation to the student's level.
-
-Grade 1-3:
-Use very simple words and easy examples.
-
-Grade 4-6:
-Use clear school-level explanations and examples.
-
-Grade 7-9:
-Use more detailed explanations and correct subject vocabulary.
-
-Grade 10-12:
-Use advanced explanations, proper terminology and deeper reasoning.
-
-SUBJECT
-
-Current subject:
-${subject}
-
-You can teach:
-
-Mathematics
-Science
-English
-History
-Geography
-Computer Science
-Technology
-Chess
-Football
-Basketball
-General knowledge
-And other school subjects.
-
-TEACHING
-
-When the student asks you to teach something:
-
+TEACHING:
+When teaching:
 1. Explain the idea.
 2. Explain why it works.
 3. Give an example.
 4. Give steps when useful.
 5. Give practice questions when requested.
 
-For mathematics:
-
-- Show the important steps.
+MATHEMATICS:
+- Show important steps.
 - Explain the method.
 - Give the final answer clearly.
 
-For science:
-
+SCIENCE:
 - Explain what happens.
 - Explain why it happens.
-- Give an everyday example when useful.
+- Give everyday examples when useful.
 
-For English:
-
+ENGLISH:
 - Explain grammar and vocabulary clearly.
 - Give examples.
 
-For chess:
+CHESS:
+- Explain tactics, strategy and ideas clearly.
+- Never pretend to see a position that was not provided.
 
-- Explain ideas, tactics and strategy clearly.
-- Do not pretend to see a chess position unless the position is provided.
+CURRENT INFORMATION:
+Use web search when current information is needed.
 
-CURRENT INFORMATION
+This includes:
+- current news
+- recent events
+- sports
+- football
+- basketball
+- chess
+- current players
+- current teams
+- current records
+- technology
+- famous people
+- recent discoveries
+- anything that may have changed recently
 
-Use web search when current or specific information is needed.
+Never invent facts.
 
-Use web search for:
+STYLE:
+- Keep simple answers short.
+- Give more detail when necessary.
+- Use normal punctuation.
+- Do not overuse emojis.
+- Use emojis naturally when appropriate.
+- Do not use unnecessary symbols.
+- Do not make every answer a huge list.
 
-- Current news
-- Recent events
-- Current sports
-- Recent matches
-- Current players
-- Current teams
-- Current records
-- Famous people
-- Athletes
-- Footballers
-- Basketball players
-- Chess players
-- Celebrities
-- Politicians
-- Recent discoveries
-- Current technology
-- Specific people
-- Anything that may have changed recently
-
-If you do not know who a specific person is,
-search for them.
-
-Never invent a person or pretend to know something you do not know.
-
-When web search gives you useful information,
-explain it naturally.
-
-IMPORTANT WEB RULE
-
-Never show URLs, website links, citations,
-source lists, reference links, markdown links
-or website addresses to the student.
-
-Do not write:
-
-"Sources:"
-"Click here..."
-"[website.com](...)"
-
-Use the information naturally.
-
-Do not mention that you searched unless
-it is useful to the conversation.
-
-CONVERSATION
-
-Use the previous conversation to understand context.
-
-If the student says:
-
-"just pick"
-"pick one"
-"choose one"
-
-Make one clear choice.
-
-If the question is clear,
-answer it directly.
-
-LANGUAGE
-
-Answer in ${language},
-unless the student clearly asks
-for another language.
-
-SAFETY
-
+SAFETY:
 Keep responses appropriate for students.
-
 Do not provide dangerous or illegal instructions.
 
-IMPORTANT
-
-Your goal is not only to answer.
-
-Your goal is to help the student understand why.
-
-Do not pretend to know something when unsure.
-
-Use web search when appropriate.
-
-Never make up facts.
+IMPORTANT:
+Your goal is to help the student understand, not just give an answer.
+Never pretend to know something when you are unsure.
 `;
 
-    /*
-     * ------------------------------------------------
-     * CONVERSATION HISTORY
-     * ------------------------------------------------
-     */
+    /* -----------------------------------------
+       CONVERSATION HISTORY
+    ----------------------------------------- */
 
     const messages = [];
 
     for (
       const message of history.slice(-10)
     ) {
-
       if (
         !message ||
         !message.content
@@ -565,29 +515,26 @@ Never make up facts.
 
       messages.push({
         role:
-          message.role === "assistant"
+          message.role ===
+          "assistant"
             ? "assistant"
             : "user",
 
         content:
-          String(message.content)
+          String(
+            message.content
+          )
       });
     }
-
-    /*
-     * Always put the current question last.
-     */
 
     messages.push({
       role: "user",
       content: question
     });
 
-    /*
-     * ------------------------------------------------
-     * OPENAI
-     * ------------------------------------------------
-     */
+    /* -----------------------------------------
+       OPENAI
+    ----------------------------------------- */
 
     const openaiResponse =
       await fetch(
@@ -628,14 +575,11 @@ Never make up facts.
     const data =
       await openaiResponse.json();
 
-    /*
-     * IMPORTANT:
-     * Only count the chat if OpenAI
-     * successfully answered.
-     */
+    /* -----------------------------------------
+       OPENAI ERROR
+    ----------------------------------------- */
 
     if (!openaiResponse.ok) {
-
       console.error(
         "OPENAI ERROR:",
         data
@@ -646,18 +590,23 @@ Never make up facts.
       ).json({
         error:
           data?.error?.message ||
-          "OpenAI request failed"
+          "OpenAI request failed."
       });
     }
+
+    /* -----------------------------------------
+       GET ANSWER
+    ----------------------------------------- */
 
     let answer =
       data.output_text;
 
     if (
       !answer &&
-      Array.isArray(data.output)
+      Array.isArray(
+        data.output
+      )
     ) {
-
       answer =
         data.output
           .filter(
@@ -683,9 +632,8 @@ Never make up facts.
     }
 
     if (!answer) {
-
       console.error(
-        "OPENAI RESPONSE:",
+        "EMPTY OPENAI RESPONSE:",
         JSON.stringify(
           data,
           null,
@@ -699,32 +647,20 @@ Never make up facts.
       });
     }
 
-    /*
-     * ------------------------------------------------
-     * COUNT THIS SUCCESSFUL AI CHAT
-     * ------------------------------------------------
-     */
+    /* -----------------------------------------
+       COUNT SUCCESSFUL CHAT
+    ----------------------------------------- */
 
     const newCount =
-      Number(
-        usage.chat_count || 0
-      ) + 1;
+      currentCount + 1;
 
-    let cooldownUntil = null;
-
-    /*
-     * When the 250th successful
-     * conversation is used, record
-     * the future cooldown time.
-     *
-     * The student still receives
-     * the 250th answer.
-     */
+    let cooldownUntil =
+      null;
 
     if (
-      newCount >= MAX_AI_CHATS
+      newCount >=
+      MAX_AI_CHATS
     ) {
-
       cooldownUntil =
         new Date(
           now + COOLDOWN_MS
@@ -733,7 +669,7 @@ Never make up facts.
 
     const updateResponse =
       await fetch(
-        supabaseUrl +
+        supabaseUrl.replace(/\/$/, "") +
           "/rest/v1/ai_usage?user_id=eq." +
           encodeURIComponent(userId),
         {
@@ -744,11 +680,11 @@ Never make up facts.
               "application/json",
 
             apikey:
-              supabaseKey,
+              supabaseServiceKey,
 
             Authorization:
               "Bearer " +
-              supabaseKey
+              supabaseServiceKey
           },
 
           body:
@@ -764,18 +700,16 @@ Never make up facts.
 
     if (!updateResponse.ok) {
       console.error(
-        "Could not update AI usage."
+        "AI USAGE UPDATE FAILED:",
+        await updateResponse.text()
       );
     }
 
-    /*
-     * ------------------------------------------------
-     * SEND ANSWER BACK TO LEARNAI
-     * ------------------------------------------------
-     */
+    /* -----------------------------------------
+       SUCCESS
+    ----------------------------------------- */
 
     return res.status(200).json({
-
       answer:
         answer.trim(),
 
@@ -787,20 +721,20 @@ Never make up facts.
         ),
 
       cooldown:
-        newCount >= MAX_AI_CHATS
+        newCount >=
+        MAX_AI_CHATS
     });
 
   } catch (error) {
-
     console.error(
-      "SERVER ERROR:",
+      "LEARN AI SERVER ERROR:",
       error
     );
 
     return res.status(500).json({
       error:
         error?.message ||
-        "Server error"
+        "LearnAI server error."
     });
   }
 };
