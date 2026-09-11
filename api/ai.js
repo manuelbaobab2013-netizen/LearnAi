@@ -478,28 +478,29 @@ Never pretend to know something when you are unsure.
     ----------------------------------------- */
 
     const openaiResponse =
-      await fetch(
-        "https://api.openai.com/v1/responses",
-        {
-          method: "POST",
+  await fetch(
+    "https://api.openai.com/v1/responses",
+    {
+      method: "POST",
 
-          headers: {
-            "Content-Type": "application/json",
+      headers: {
+        "Content-Type": "application/json",
 
-            Authorization:
-              "Bearer " + openaiKey
-          },
+        Authorization:
+          "Bearer " + openaiKey
+      },
 
-          body: JSON.stringify({
-            model: "gpt-5.6-luna",
+      body: JSON.stringify({
+        model: "gpt-5.6-luna",
+        instructions: instructions,
+        input: messages.slice(-2),
+        max_output_tokens: 600
+      })
+    }
+  );
 
-            instructions: instructions,
-
-         input: messages.slice(-2),
-
-           max_output_tokens: 600
-            })
-              
+const data =
+  await openaiResponse.json();
             
 
     const data =
