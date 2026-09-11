@@ -499,9 +499,6 @@ Never pretend to know something when you are unsure.
     }
   );
 
-const data =
-  await openaiResponse.json();
-            
 
     const data =
       await openaiResponse.json();
