@@ -2519,56 +2519,58 @@ const supabaseClient = window.supabase.createClient(
       }
     }
 
-    async function callAI(
-      question,
-      subject = "General",
-      level = "Intermediate"
-    ) {
-      const language =
-        localStorage.getItem(
-          "learnAILanguage"
-        ) || "English";
+ async function callAI(
+  question,
+  subject = "General",
+  level = "Intermediate"
+) {
+  const language =
+    localStorage.getItem("learnAILanguage") || "English";
 
-      const history =
-        currentConversation
-          .slice(-12);
+  const { data: { session } } =
+    await supabaseClient.auth.getSession();
 
-      const response =
-        await fetch(
-          "/api/ai",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-            body: JSON.stringify({
-              question,
-              subject,
-              level,
-              language,
-              history
-            })
-          }
-        );
+  if (!session) {
+    throw new Error("You must be logged in to use LearnAI.");
+  }
 
-      const result =
-        await response.json()
-          .catch(() => ({}));
+  const history =
+    currentConversation.slice(-12);
 
-      if (!response.ok) {
-        throw new Error(
-          result.error ||
-          "AI backend unavailable."
-        );
-      }
-
-      return (
-        result.answer ||
-        result.output_text ||
-        "I could not get an answer."
-      );
+  const response = await fetch(
+    "/api/ai",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        question,
+        subject,
+        level,
+        language,
+        history
+      })
     }
+  );
+
+  const result =
+    await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      result.error ||
+      "AI backend unavailable."
+    );
+  }
+
+  return (
+    result.answer ||
+    result.output_text ||
+    "I could not get an answer."
+  );
+}
 
     /* =====================================================
        NEW CHAT
