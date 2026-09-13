@@ -1,3 +1,5 @@
+import { createClient } from "@supabase/supabase-js";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -6,11 +8,57 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ================================
+    // CHECK SUPABASE LOGIN
+    // ================================
+
+    const authHeader = req.headers.authorization || "";
+
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error: "You must be logged in to use LearnAI."
+      });
+    }
+
+    const accessToken = authHeader.replace("Bearer ", "").trim();
+
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey =
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({
+        error: "Supabase configuration is missing in Vercel."
+      });
+    }
+
+    const supabase = createClient(
+      supabaseUrl,
+      supabaseKey
+    );
+
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser(accessToken);
+
+    if (userError || !user) {
+      return res.status(401).json({
+        error: "Your login session is invalid or expired."
+      });
+    }
+
+    // ================================
+    // GET QUESTION
+    // ================================
+
     const {
       question,
       subject,
       level,
-      language
+      language,
+      history
     } = req.body || {};
 
     if (!question) {
@@ -18,6 +66,10 @@ export default async function handler(req, res) {
         error: "Question is required."
       });
     }
+
+    // ================================
+    // AI KEYS
+    // ================================
 
     const openaiKey = process.env.OPENAI_API_KEY;
     const geminiKey = process.env.GEMINI_API_KEY;
@@ -27,6 +79,10 @@ export default async function handler(req, res) {
         error: "No AI provider is connected."
       });
     }
+
+    // ================================
+    // LEARNAI INSTRUCTIONS
+    // ================================
 
     const instructions = `
 You are LearnAI, a friendly AI tutor.
@@ -45,7 +101,10 @@ Language: ${language || "English"}
     let answer = null;
     let provider = null;
 
+    // ================================
     // OPENAI
+    // ================================
+
     if (openaiKey) {
       try {
         const response = await fetch(
@@ -67,7 +126,10 @@ Language: ${language || "English"}
 
         const data = await response.json();
 
-        console.log("OpenAI status:", response.status);
+        console.log(
+          "OpenAI status:",
+          response.status
+        );
 
         if (response.ok) {
           answer = data?.output_text || "";
@@ -95,14 +157,23 @@ Language: ${language || "English"}
             provider = "OpenAI";
           }
         } else {
-          console.error("OpenAI error:", data);
+          console.error(
+            "OpenAI error:",
+            data
+          );
         }
       } catch (error) {
-        console.error("OpenAI connection error:", error);
+        console.error(
+          "OpenAI connection error:",
+          error
+        );
       }
     }
 
+    // ================================
     // GEMINI BACKUP
+    // ================================
+
     if (!answer && geminiKey) {
       try {
         const response = await fetch(
@@ -135,7 +206,10 @@ ${question}`
 
         const data = await response.json();
 
-        console.log("Gemini status:", response.status);
+        console.log(
+          "Gemini status:",
+          response.status
+        );
 
         if (response.ok) {
           answer =
@@ -147,18 +221,33 @@ ${question}`
             provider = "Gemini";
           }
         } else {
-          console.error("Gemini error:", data);
+          console.error(
+            "Gemini error:",
+            data
+          );
         }
       } catch (error) {
-        console.error("Gemini connection error:", error);
+        console.error(
+          "Gemini connection error:",
+          error
+        );
       }
     }
 
+    // ================================
+    // NO AI RESPONSE
+    // ================================
+
     if (!answer) {
       return res.status(503).json({
-        error: "The AI service is temporarily unavailable."
+        error:
+          "The AI service is temporarily unavailable."
       });
     }
+
+    // ================================
+    // SUCCESS
+    // ================================
 
     return res.status(200).json({
       answer,
@@ -166,7 +255,10 @@ ${question}`
     });
 
   } catch (error) {
-    console.error("SERVER ERROR:", error);
+    console.error(
+      "SERVER ERROR:",
+      error
+    );
 
     return res.status(500).json({
       error: "AI backend error."
