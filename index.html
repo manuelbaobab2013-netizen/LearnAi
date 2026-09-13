@@ -2951,98 +2951,93 @@ const supabaseClient = window.supabase.createClient(
       );
     }
 
-    async function generateMaterial() {
-      const grade =
-        document.getElementById(
-          "generatorGrade"
-        ).value;
+ async function generateMaterial() {
+  const grade =
+    document.getElementById("generatorGrade").value;
 
-      const subject =
-        document.getElementById(
-          "generatorSubject"
-        ).value;
+  const subject =
+    document.getElementById("generatorSubject").value;
 
-      const topic =
-        document.getElementById(
-          "generatorTopic"
-        ).value.trim();
+  const topic =
+    document.getElementById("generatorTopic").value.trim();
 
-      const instructions =
-        document.getElementById(
-          "generatorInstructions"
-        ).value.trim();
+  const instructions =
+    document.getElementById("generatorInstructions").value.trim();
 
-      if (!topic) {
-        showToast(
-          "Please enter a topic.",
-          "error"
-        );
+  if (!topic) {
+    showToast(
+      "Please enter a topic.",
+      "error"
+    );
+    return;
+  }
 
-        return;
+  const status =
+    document.getElementById("generatorStatus");
+
+  const result =
+    document.getElementById("generatorResult");
+
+  status.textContent = "Generating...";
+  result.textContent = "";
+
+  try {
+    const response = await fetch(
+      "https://learnai-generator.onrender.com/generate",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          type: generatorType,
+          subject,
+          grade,
+          topic,
+          instructions
+        })
       }
+    );
 
-      const status =
-        document.getElementById(
-          "generatorStatus"
-        );
+    const data =
+      await response.json().catch(() => ({}));
 
-      const result =
-        document.getElementById(
-          "generatorResult"
-        );
-
-      status.textContent =
-        "Generating...";
-
-      result.textContent =
-        "";
-
-      try {
-        const prompt = `
-Create a ${generatorType} for a student.
-
-Grade: ${grade}
-Subject: ${subject}
-Topic: ${topic}
-
-Extra instructions:
-${instructions || "None"}
-
-Make it educational, accurate, clear and appropriate
-for the student's grade.
-`;
-
-        const answer =
-          await callAI(
-            prompt,
-            subject,
-            grade
-          );
-
-        result.textContent =
-          answer;
-
-        status.textContent =
-          "Generated successfully.";
-
-        recordActivity();
-
-        showToast(
-          "Material generated successfully.",
-          "success"
-        );
-
-      } catch (error) {
-        status.textContent =
-          "";
-
-        showToast(
-          error.message,
-          "error"
-        );
-      }
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+        "AI Generator backend unavailable."
+      );
     }
 
+    result.textContent =
+      data.answer ||
+      "No material was generated.";
+
+    status.textContent =
+      `Generated successfully${data.provider ? ` with ${data.provider}.` : "."}`;
+
+    recordActivity();
+
+    showToast(
+      "Material generated successfully.",
+      "success"
+    );
+
+  } catch (error) {
+    console.error(
+      "Generator error:",
+      error
+    );
+
+    status.textContent = "";
+
+    showToast(
+      error.message ||
+      "The AI Generator is temporarily unavailable.",
+      "error"
+    );
+  }
+}
     /* =====================================================
        WORKSHEET GENERATOR
     ===================================================== */
