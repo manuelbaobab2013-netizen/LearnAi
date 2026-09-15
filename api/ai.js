@@ -24,9 +24,14 @@ module.exports = async function handler(req, res) {
       process.env.SUPABASE_ANON_KEY ||
       process.env.SUPABASE_PUBLISHABLE_KEY;
 
-    const openaiKey = process.env.OPENAI_API_KEY;
-    const geminiKey = process.env.GEMINI_API_KEY;
+    const openrouterKey =
+  process.env.OPENROUTER_API_KEY;
 
+const openaiKey =
+  process.env.OPENAI_API_KEY;
+
+const geminiKey =
+  process.env.GEMINI_API_KEY;
     if (!supabaseUrl) {
       return res.status(500).json({
         error: "SUPABASE_URL is missing in Vercel."
@@ -46,10 +51,10 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    if (!openaiKey && !geminiKey) {
+  if (!openrouterKey && !openaiKey && !geminiKey) {
       return res.status(500).json({
-        error:
-          "No AI provider is configured. Add OPENAI_API_KEY or GEMINI_API_KEY in Vercel."
+    error:
+  "No AI provider is configured. Add OPENROUTER_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY in Vercel."
       });
     }
 
@@ -259,97 +264,85 @@ Never pretend to know something when you are unsure.
 `;
 
     /* -----------------------------------------
-       OPENAI PRIMARY
-    ----------------------------------------- */
+   OPENROUTER PRIMARY
+----------------------------------------- */
 
-    let openaiError = null;
+let openrouterError = null;
 
-    if (openaiKey) {
-      try {
-        const openaiResponse = await fetch(
-          "https://api.openai.com/v1/responses",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + openaiKey
+if (openrouterKey) {
+  try {
+    const openrouterResponse = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer " + openrouterKey,
+          "HTTP-Referer":
+            "https://learn-ai-blli-git-main-manuelbaobab2013-8788.vercel.app/",
+          "X-Title": "LearnAI"
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: instructions
             },
-            body: JSON.stringify({
-              model: "gpt-5.6-luna",
-              instructions: instructions,
-              input: messages.slice(-10),
-              max_output_tokens: 600
-            })
-          }
-        );
-
-        const data =
-          await openaiResponse.json().catch(() => ({}));
-
-        if (!openaiResponse.ok) {
-          openaiError =
-            data?.error?.message ||
-            "OpenAI request failed.";
-
-          console.error(
-            "OPENAI ERROR:",
-            openaiError
-          );
-        } else {
-          let answer =
-            data.output_text;
-
-          if (
-            !answer &&
-            Array.isArray(data.output)
-          ) {
-            answer =
-              data.output
-                .filter(
-                  item =>
-                    item.type === "message"
-                )
-                .flatMap(
-                  item =>
-                    item.content || []
-                )
-                .filter(
-                  item =>
-                    item.type === "output_text"
-                )
-                .map(
-                  item =>
-                    item.text
-                )
-                .filter(Boolean)
-                .join("\n");
-          }
-
-          if (answer) {
-            return res.status(200).json({
-              answer: answer.trim(),
-              provider: "OpenAI"
-            });
-          }
-
-          openaiError =
-            "OpenAI returned no text.";
-        }
-      } catch (error) {
-        openaiError =
-          error?.message ||
-          "OpenAI connection failed.";
-
-        console.error(
-          "OPENAI CONNECTION ERROR:",
-          openaiError
-        );
+            ...messages.slice(-10)
+          ],
+          max_tokens: 600
+        })
       }
+    );
+
+    const data =
+      await openrouterResponse
+        .json()
+        .catch(() => ({}));
+
+    if (!openrouterResponse.ok) {
+      openrouterError =
+        data?.error?.message ||
+        "OpenRouter request failed.";
+
+      console.error(
+        "OPENROUTER ERROR:",
+        openrouterError
+      );
+    } else {
+      const answer =
+        data?.choices?.[0]?.message?.content
+          ?.trim();
+
+      if (answer) {
+        return res.status(200).json({
+          answer,
+          provider: "OpenRouter"
+        });
+      }
+
+      openrouterError =
+        "OpenRouter returned no text.";
     }
 
-    /* -----------------------------------------
-       GEMINI BACKUP
-    ----------------------------------------- */
+  } catch (error) {
+    openrouterError =
+      error?.message ||
+      "OpenRouter connection failed.";
+
+     console.error(
+      "OPENROUTER CONNECTION ERROR:",
+      openrouterError
+    );
+  }
+}
+
+/* -----------------------------------------
+   GEMINI BACKUP
+----------------------------------------- */
+  
 
     if (geminiKey) {
       try {
@@ -417,9 +410,9 @@ Respond to the student's latest message.
 
           return res.status(503).json({
             error:
-              "OpenAI and Gemini are currently unavailable.",
+  "OpenRouter and Gemini are currently unavailable.",
             details: {
-              openai: openaiError,
+            openrouter: openrouterError,
               gemini:
                 geminiData?.error?.message ||
                 "Gemini request failed."
@@ -453,9 +446,9 @@ Respond to the student's latest message.
 
         return res.status(503).json({
           error:
-            "OpenAI and Gemini are currently unavailable.",
+            "OpenRouter and Gemini are currently unavailable.",
           details: {
-            openai: openaiError,
+             openrouter: openrouterError,
             gemini:
               error?.message ||
               "Gemini connection failed."
@@ -470,9 +463,9 @@ Respond to the student's latest message.
 
     return res.status(503).json({
       error:
-        "OpenAI is currently unavailable and no Gemini backup is configured.",
-      details: openaiError
-    });
+        "OpenRouter is currently unavailable and no Gemini backup is configured.",
+details: openrouterError
+  });
 
   } catch (error) {
     console.error(
