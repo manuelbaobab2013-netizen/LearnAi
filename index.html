@@ -2518,8 +2518,7 @@ const supabaseClient = window.supabase.createClient(
         sendMessage();
       }
     }
-
- async function callAI(
+async function callAI(
   question,
   subject = "General",
   level = "Intermediate"
@@ -2537,40 +2536,94 @@ const supabaseClient = window.supabase.createClient(
   const history =
     currentConversation.slice(-12);
 
-  const response = await fetch(
-    "/api/ai",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify({
-        question,
-        subject,
-        level,
-        language,
-        history
-      })
+  const payload = {
+    question,
+    subject,
+    level,
+    language,
+    history
+  };
+
+  // PRIMARY: Vercel
+  try {
+    const response = await fetch(
+      "/api/ai",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result =
+      await response.json().catch(() => ({}));
+
+    if (response.ok) {
+      const answer =
+        result.answer ||
+        result.output_text;
+
+      if (answer) {
+        return answer;
+      }
     }
-  );
 
-  const result =
-    await response.json().catch(() => ({}));
+    console.warn(
+      "Vercel Tutor failed. Trying Render backup..."
+    );
 
-  if (!response.ok) {
-    throw new Error(
-      result.error ||
-      "AI backend unavailable."
+  } catch (error) {
+    console.warn(
+      "Vercel Tutor connection failed. Trying Render backup...",
+      error
     );
   }
 
-  return (
-    result.answer ||
-    result.output_text ||
-    "I could not get an answer."
-  );
+  // BACKUP: Render
+  try {
+    const response = await fetch(
+      "https://learnai-tutor-backup.onrender.com/api/ai",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result =
+      await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+        "Render Tutor backup unavailable."
+      );
+    }
+
+    return (
+      result.answer ||
+      result.output_text ||
+      "I could not get an answer."
+    );
+
+  } catch (error) {
+    console.error(
+      "Both Tutor backends failed:",
+      error
+    );
+
+    throw new Error(
+      "AI Tutor is temporarily unavailable. Please try again."
+    );
+  }
 }
+
 
     /* =====================================================
        NEW CHAT
