@@ -3543,36 +3543,43 @@ Do not make the questions too advanced for the grade.
     /* =====================================================
        LOGOUT
     ===================================================== */
+async function logout() {
+  const confirmed = confirm(
+    "Are you sure you want to log out?"
+  );
 
-    async function logout() {
-      try {
-        await supabaseClient.auth.signOut();
-      } catch (error) {
-        console.error(error);
-      }
+  if (!confirmed) {
+    return;
+  }
 
-      currentUser = null;
-      currentConversation = [];
-      conversations = [];
+  try {
+    await supabaseClient.auth.signOut();
+  } catch (error) {
+    console.error(error);
+  }
 
-      document.getElementById(
-        "app"
-      ).classList.add("hidden");
+  currentUser = null;
+  currentConversation = [];
+  conversations = [];
 
-      document.getElementById(
-        "auth"
-      ).classList.add("hidden");
+  document.getElementById(
+    "app"
+  ).classList.add("hidden");
 
-      document.getElementById(
-        "gate"
-      ).classList.remove("hidden");
+  document.getElementById(
+    "auth"
+  ).classList.add("hidden");
 
-      showToast(
-        "You have been logged out.",
-        "success"
-      );
-    }
+  document.getElementById(
+    "gate"
+  ).classList.remove("hidden");
 
+  showToast(
+    "You have been logged out.",
+    "success"
+  );
+}
+   
     /* =====================================================
        SECURITY / DISPLAY
     ===================================================== */
