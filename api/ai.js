@@ -29,20 +29,17 @@ module.exports = async function handler(req, res) {
 
 const openaiKey =
   process.env.OPENAI_API_KEY;
-
 const geminiKey =
   process.env.GEMINI_API_KEY;
-    if (!supabaseUrl) {
-      return res.status(500).json({
-        error: "SUPABASE_URL is missing in Vercel."
-      });
-    }
 
-    if (!supabaseServiceKey) {
-      return res.status(500).json({
-        error: "SUPABASE_SERVICE_ROLE_KEY is missing in Vercel."
-      });
-    }
+const groqKey =
+  process.env.GROQ_API_KEY;
+
+if (!supabaseUrl) {
+  return res.status(500).json({
+    error: "SUPABASE_URL is missing in Vercel."
+  });
+}
 
     if (!supabaseAnonKey) {
       return res.status(500).json({
@@ -51,10 +48,10 @@ const geminiKey =
       });
     }
 
-  if (!openrouterKey && !openaiKey && !geminiKey) {
+ if (!openrouterKey && !openaiKey && !geminiKey && !groqKey) {
       return res.status(500).json({
-    error:
-  "No AI provider is configured. Add OPENROUTER_API_KEY, OPENAI_API_KEY or GEMINI_API_KEY in Vercel."
+  error:
+  "No AI provider is configured. Add OPENROUTER_API_KEY, GEMINI_API_KEY or GROQ_API_KEY in Vercel."
       });
     }
 
@@ -339,30 +336,32 @@ if (openrouterKey) {
   }
 }
 
-/* -----------------------------------------
+
+  /* -----------------------------------------
    GEMINI BACKUP
 ----------------------------------------- */
-  
 
-    if (geminiKey) {
-      try {
-        const conversationText =
-          messages
-            .map(message => {
-              const speaker =
-                message.role === "assistant"
-                  ? "LearnAI"
-                  : "Student";
+let geminiError = null;
 
-              return (
-                speaker +
-                ": " +
-                message.content
-              );
-            })
-            .join("\n\n");
+if (geminiKey) {
+  try {
+    const conversationText =
+      messages
+        .map(message => {
+          const speaker =
+            message.role === "assistant"
+              ? "LearnAI"
+              : "Student";
 
-        const geminiPrompt = `
+          return (
+            speaker +
+            ": " +
+            message.content
+          );
+        })
+        .join("\n\n");
+
+    const geminiPrompt = `
 ${instructions}
 
 Continue this conversation naturally.
@@ -373,99 +372,175 @@ ${conversationText}
 Respond to the student's latest message.
 `;
 
-        const geminiResponse = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-goog-api-key": geminiKey
-            },
-            body: JSON.stringify({
-              contents: [
+    const geminiResponse = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": geminiKey
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
                 {
-                  role: "user",
-                  parts: [
-                    {
-                      text: geminiPrompt
-                    }
-                  ]
+                  text: geminiPrompt
                 }
-              ],
-              generationConfig: {
-                maxOutputTokens: 600
-              }
-            })
-          }
-        );
-
-        const geminiData =
-          await geminiResponse.json().catch(() => ({}));
-
-        if (!geminiResponse.ok) {
-          console.error(
-            "GEMINI ERROR:",
-            geminiData
-          );
-
-          return res.status(503).json({
-            error:
-  "OpenRouter and Gemini are currently unavailable.",
-            details: {
-            openrouter: openrouterError,
-              gemini:
-                geminiData?.error?.message ||
-                "Gemini request failed."
+              ]
             }
-          });
-        }
+          ],
+          generationConfig: {
+            maxOutputTokens: 600
+          }
+        })
+      }
+    );
 
-        const answer =
-          geminiData?.candidates?.[0]?.content?.parts
-            ?.map(part => part.text || "")
-            .join("")
-            .trim();
+    const geminiData =
+      await geminiResponse.json().catch(() => ({}));
 
-        if (!answer) {
-          return res.status(503).json({
-            error:
-              "Both AI providers returned no answer."
-          });
-        }
+    if (geminiResponse.ok) {
+      const answer =
+        geminiData?.candidates?.[0]?.content?.parts
+          ?.map(part => part.text || "")
+          .join("")
+          .trim();
 
+      if (answer) {
         return res.status(200).json({
           answer,
           provider: "Gemini"
         });
-
-      } catch (error) {
-        console.error(
-          "GEMINI CONNECTION ERROR:",
-          error
-        );
-
-        return res.status(503).json({
-          error:
-            "OpenRouter and Gemini are currently unavailable.",
-          details: {
-             openrouter: openrouterError,
-            gemini:
-              error?.message ||
-              "Gemini connection failed."
-          }
-        });
       }
+
+      geminiError = "Gemini returned no text.";
+    } else {
+      geminiError =
+        geminiData?.error?.message ||
+        "Gemini request failed.";
+
+      console.error(
+        "GEMINI ERROR:",
+        geminiError
+      );
     }
 
-    /* -----------------------------------------
-       NO BACKUP AVAILABLE
-    ----------------------------------------- */
+  } catch (error) {
+    geminiError =
+      error?.message ||
+      "Gemini connection failed.";
+
+    console.error(
+      "GEMINI CONNECTION ERROR:",
+      geminiError
+    );
+  }
+}
+
+/* -----------------------------------------
+   GROQ PROVIDER #3
+----------------------------------------- */
+
+if (groqKey) {
+  try {
+    const groqResponse = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer " + groqKey
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-oss-120b",
+          messages: [
+            {
+              role: "system",
+              content: instructions
+            },
+            ...messages.slice(-10)
+          ],
+          max_completion_tokens: 600,
+          temperature: 1
+        })
+      }
+    );
+
+    const groqData =
+      await groqResponse.json().catch(() => ({}));
+
+    if (!groqResponse.ok) {
+      console.error(
+        "GROQ ERROR:",
+        groqData
+      );
+
+      return res.status(503).json({
+        error:
+          "OpenRouter, Gemini and Groq are currently unavailable.",
+        details: {
+          openrouter: openrouterError,
+          gemini: geminiError,
+          groq:
+            groqData?.error?.message ||
+            "Groq request failed."
+        }
+      });
+    }
+
+    const answer =
+      groqData?.choices?.[0]?.message?.content
+        ?.trim();
+
+    if (!answer) {
+      return res.status(503).json({
+        error:
+          "OpenRouter, Gemini and Groq returned no answer."
+      });
+    }
+
+    return res.status(200).json({
+      answer,
+      provider: "Groq"
+    });
+
+  } catch (error) {
+    console.error(
+      "GROQ CONNECTION ERROR:",
+      error
+    );
 
     return res.status(503).json({
       error:
-        "OpenRouter is currently unavailable and no Gemini backup is configured.",
-details: openrouterError
-  });
+        "OpenRouter, Gemini and Groq are currently unavailable.",
+      details: {
+        openrouter: openrouterError,
+        gemini: geminiError,
+        groq:
+          error?.message ||
+          "Groq connection failed."
+      }
+    });
+  }
+}
+
+/* -----------------------------------------
+   NO AI PROVIDER AVAILABLE
+----------------------------------------- */
+return res.status(503).json({
+  error:
+    "All LearnAI AI providers are currently unavailable.",
+  details: {
+    openrouter: openrouterError,
+    gemini: geminiError,
+    groq: groqKey
+      ? "Groq request failed."
+      : "GROQ_API_KEY is not configured."
+  }
+});
 
   } catch (error) {
     console.error(
