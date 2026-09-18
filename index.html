@@ -866,69 +866,7 @@
        RESPONSIVE
     ========================= */
 
-    @media (max-width: 1100px) {
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .card-grid,
-      .premium-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .generator-types {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .tutor-layout {
-        grid-template-columns: 240px 1fr;
-      }
-    }
-
-    @media (max-width: 800px) {
-      .sidebar {
-        width: 75px;
-        padding: 15px 8px;
-      }
-
-      .brand span,
-      .section-label,
-      .nav-btn span {
-        display: none;
-      }
-
-      .nav-btn {
-        justify-content: center;
-      }
-
-      .main-content {
-        margin-left: 75px;
-        width: calc(100% - 75px);
-      }
-
-      .page {
-        padding: 18px;
-      }
-
-      .tutor-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .conversation-panel {
-        min-height: 220px;
-      }
-
-      .settings-grid,
-      .worksheet-controls {
-        grid-template-columns: 1fr;
-      }
-
-      .language-list {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 550px) {
+     @media (max-width: 550px) {
       .gate-card {
         padding: 30px 20px;
       }
@@ -952,11 +890,76 @@
         flex-direction: column;
       }
     }
+
+      /* =========================
+       LOGOUT CONFIRMATION
+    ========================= */
+        .logout-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .logout-modal.hidden {
+      display: none;
+    }
+
+    .logout-box {
+      background: var(--card);
+      padding: 30px;
+      border-radius: 20px;
+      width: min(90%, 400px);
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    }
+
+    .logout-box h2 {
+      margin-bottom: 10px;
+    }
+
+    .logout-box p {
+      color: var(--muted);
+      margin-bottom: 25px;
+    }
+
+    .logout-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .logout-actions button {
+      min-width: 100px;
+    }
   </style>
 </head>
 
 <body>
+  <!-- =========================
+       LOGOUT CONFIRMATION
+  ========================= -->
 
+  <div class="logout-modal hidden" id="logoutModal">
+    <div class="logout-box">
+      <h2>ARE YOU SURE?</h2>
+
+      <p>Do you want to log out of LearnAI?</p>
+
+      <div class="logout-actions">
+        <button class="secondary-btn" onclick="closeLogoutModal()">
+          NO
+        </button>
+
+        <button class="primary-btn" onclick="confirmLogout()">
+          YES
+        </button>
+      </div>
+    </div>
+  </div>
   <!-- =========================
        WELCOME
   ========================= -->
@@ -3539,18 +3542,24 @@ Do not make the questions too advanced for the grade.
         ) || "en-US"
       );
     }
+ /* =====================================================
+   LOGOUT
+===================================================== */
 
-    /* =====================================================
-       LOGOUT
-    ===================================================== */
-async function logout() {
-  const confirmed = confirm(
-    "Are you sure you want to log out?"
-  );
+function logout() {
+  document
+    .getElementById("logoutModal")
+    .classList.remove("hidden");
+}
 
-  if (!confirmed) {
-    return;
-  }
+function closeLogoutModal() {
+  document
+    .getElementById("logoutModal")
+    .classList.add("hidden");
+}
+
+async function confirmLogout() {
+  closeLogoutModal();
 
   try {
     await supabaseClient.auth.signOut();
@@ -3562,24 +3571,15 @@ async function logout() {
   currentConversation = [];
   conversations = [];
 
-  document.getElementById(
-    "app"
-  ).classList.add("hidden");
-
-  document.getElementById(
-    "auth"
-  ).classList.add("hidden");
-
-  document.getElementById(
-    "gate"
-  ).classList.remove("hidden");
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("auth").classList.add("hidden");
+  document.getElementById("gate").classList.remove("hidden");
 
   showToast(
     "You have been logged out.",
     "success"
   );
-}
-   
+}  
     /* =====================================================
        SECURITY / DISPLAY
     ===================================================== */
