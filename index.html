@@ -1053,62 +1053,80 @@
 
   <div class="app hidden" id="app">
 
-    <!-- SIDEBAR -->
+   <!-- SIDEBAR -->
 
-    <aside class="sidebar">
+<aside class="sidebar">
 
-      <div class="brand">
-        <div class="brand-icon">L</div>
-        <span>LearnAI</span>
-      </div>
+  <div class="brand">
+    <div class="brand-icon">L</div>
+    <span>LearnAI</span>
+  </div>
 
-      <!-- MAIN IS DECORATIVE -->
+  <!-- MAIN IS DECORATIVE -->
+  <div class="section-label">
+    MAIN
+  </div>
 
-      <div class="section-label">
-        MAIN
-      </div>
+  <button class="nav-btn active" data-page="home" onclick="openPage('home')">
+    <span>🏠</span>
+    <span>HOME</span>
+  </button>
 
-      <button class="nav-btn active" data-page="home" onclick="openPage('home')">
-        <span>🏠</span>
-        <span>HOME</span>
-      </button>
+  <button class="nav-btn" data-page="tutor" onclick="openPage('tutor')">
+    <span>🤖</span>
+    <span>AI TUTOR</span>
+  </button>
 
-      <button class="nav-btn" data-page="tutor" onclick="openPage('tutor')">
-        <span>🤖</span>
-        <span>AI TUTOR</span>
-      </button>
+  <button class="nav-btn" data-page="generator" onclick="openPage('generator')">
+    <span>✨</span>
+    <span>AI GENERATOR</span>
+  </button>
 
-      <button class="nav-btn" data-page="generator" onclick="openPage('generator')">
-        <span>✨</span>
-        <span>AI GENERATOR</span>
-      </button>
+  <button class="nav-btn" data-page="worksheets" onclick="openPage('worksheets')">
+    <span>📄</span>
+    <span>WORKSHEETS</span>
+  </button>
 
-      <button class="nav-btn" data-page="worksheets" onclick="openPage('worksheets')">
-        <span>📄</span>
-        <span>WORKSHEETS</span>
-      </button>
+  <!-- GOALS IS DECORATIVE -->
+  <div class="section-label">
+    GOALS
+  </div>
 
-      <div class="sidebar-bottom">
+  <button class="nav-btn" data-page="streaks" onclick="openPage('streaks')">
+    <span>🔥</span>
+    <span>STREAKS</span>
+  </button>
 
-        <button class="nav-btn" data-page="premium" onclick="openPage('premium')">
-          <span>💎</span>
-          <span>PREMIUM</span>
-        </button>
+  <button class="nav-btn" data-page="achievements" onclick="openPage('achievements')">
+    <span>🏆</span>
+    <span>ACHIEVEMENTS</span>
+  </button>
 
-        <button class="nav-btn" data-page="settings" onclick="openPage('settings')">
-          <span>⚙️</span>
-          <span>SETTINGS</span>
-        </button>
+  <button class="nav-btn" data-page="progress" onclick="openPage('progress')">
+    <span>📈</span>
+    <span>PROGRESS</span>
+  </button>
 
-        <button class="nav-btn" onclick="logout()">
-          <span>🚪</span>
-          <span>LOG OUT</span>
-        </button>
+  <button class="nav-btn" data-page="premium" onclick="openPage('premium')">
+    <span>💎</span>
+    <span>PREMIUM</span>
+  </button>
 
-      </div>
+  <div class="sidebar-bottom">
 
-    </aside>
+    <button class="nav-btn" data-page="settings" onclick="openPage('settings')">
+      <span>⚙️</span>
+      <span>SETTINGS</span>
+    </button>
 
+    <button class="nav-btn" onclick="logout()">
+      <span>🚪</span>
+      <span>LOG OUT</span>
+    </button>
+
+  </div>
+
+</aside>
     <!-- MAIN CONTENT -->
 
     <main class="main-content">
