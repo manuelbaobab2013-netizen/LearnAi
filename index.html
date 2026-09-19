@@ -1665,6 +1665,186 @@
 
 </section>
       <!-- =========================
+     ACHIEVEMENTS
+========================= -->
+
+<section class="page" id="page-achievements">
+
+  <div class="page-header">
+    <h1>YOUR ACHIEVEMENTS 🏆</h1>
+    <p>Everything you've accomplished with LearnAI.</p>
+  </div>
+
+  <div class="achievement-hero">
+    <div class="achievement-icon">🏆</div>
+    <div>
+      <h2 id="achievementYear">2026 ACHIEVEMENTS</h2>
+      <p>Keep learning. Keep unlocking.</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+
+    <div class="achievement-card">
+      <h3>🏆 UNLOCKED</h3>
+      <div class="achievement-value" id="achievementsUnlocked">0</div>
+    </div>
+
+    <div class="achievement-card">
+      <h3>📚 ACTIVITIES</h3>
+      <div class="achievement-value" id="achievementActivities">0</div>
+    </div>
+
+    <div class="achievement-card">
+      <h3>🔥 LONGEST STREAK</h3>
+      <div class="achievement-value" id="achievementBestStreak">0 days</div>
+    </div>
+
+    <div class="achievement-card">
+      <h3>💯 PERFECT SCORES</h3>
+      <div class="achievement-value" id="achievementPerfectScores">0</div>
+    </div>
+
+  </div>
+
+  <div class="achievement-section">
+    <h2>📅 TODAY</h2>
+
+    <div class="achievement-record">
+      <span>Activities completed</span>
+      <strong id="achievementTodayActivities">0</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Subjects studied</span>
+      <strong id="achievementTodaySubjects">0</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Perfect scores</span>
+      <strong id="achievementTodayPerfect">0</strong>
+    </div>
+  </div>
+
+  <div class="achievement-section">
+    <h2>📆 THIS WEEK</h2>
+
+    <div class="achievement-record">
+      <span>Activities completed</span>
+      <strong id="achievementWeekActivities">0</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Study streak</span>
+      <strong id="achievementWeekStreak">0 days</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Subjects studied</span>
+      <strong id="achievementWeekSubjects">0</strong>
+    </div>
+  </div>
+
+  <div class="achievement-section">
+    <h2>🗓️ THIS MONTH</h2>
+
+    <div class="achievement-record">
+      <span>Activities completed</span>
+      <strong id="achievementMonthActivities">0</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Perfect scores</span>
+      <strong id="achievementMonthPerfect">0</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Subjects studied</span>
+      <strong id="achievementMonthSubjects">0</strong>
+    </div>
+  </div>
+
+  <div class="achievement-section">
+    <h2>🏅 THIS YEAR</h2>
+
+    <div class="achievement-record">
+      <span>Total activities</span>
+      <strong id="achievementYearActivities">0</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Longest streak</span>
+      <strong id="achievementYearStreak">0 days</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Subjects studied</span>
+      <strong id="achievementYearSubjects">0</strong>
+    </div>
+
+    <div class="achievement-record">
+      <span>Perfect scores</span>
+      <strong id="achievementYearPerfect">0</strong>
+    </div>
+  </div>
+
+  <div class="achievement-section">
+    <h2>🎖️ MILESTONES</h2>
+
+    <div class="achievements-grid">
+
+      <div class="achievement-badge locked" id="achievement-first">
+        <div>📚</div>
+        <h3>FIRST STEP</h3>
+        <p>Complete your first activity.</p>
+      </div>
+
+      <div class="achievement-badge locked" id="achievement-builder">
+        <div>🧠</div>
+        <h3>KNOWLEDGE BUILDER</h3>
+        <p>Complete 10 activities.</p>
+      </div>
+
+      <div class="achievement-badge locked" id="achievement-streak">
+        <div>🔥</div>
+        <h3>7-DAY STREAK</h3>
+        <p>Study for 7 days in a row.</p>
+      </div>
+
+      <div class="achievement-badge locked" id="achievement-perfect">
+        <div>💯</div>
+        <h3>PERFECT SCORE</h3>
+        <p>Score 100% on an activity.</p>
+      </div>
+
+      <div class="achievement-badge locked" id="achievement-rising">
+        <div>🚀</div>
+        <h3>RISING STAR</h3>
+        <p>Improve your learning performance.</p>
+      </div>
+
+      <div class="achievement-badge locked" id="achievement-champion">
+        <div>🏆</div>
+        <h3>LEARN AI CHAMPION</h3>
+        <p>Reach a major learning milestone.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="achievement-section">
+    <h2>✨ RECENT ACHIEVEMENTS</h2>
+
+    <div id="recentAchievements">
+      <p class="empty-achievements">
+        Complete activities to start unlocking achievements.
+      </p>
+    </div>
+
+  </div>
+
+</section>
+      <!-- =========================
            PREMIUM
       ========================= -->
 
@@ -2089,7 +2269,8 @@ const supabaseClient = window.supabase.createClient(
       streak: 0,
       bestStreak: 0,
       lastActivityDate: null,
-      studyDates: []
+      studyDates: [],
+      activityHistory: []
     };
 
     let learningData = loadJSON(
@@ -3422,6 +3603,315 @@ Do not make the questions too advanced for the grade.
 
       saveLearningData();
     }
+
+    /* =====================================================
+   ACHIEVEMENTS
+===================================================== */
+
+function updateAchievementsPage() {
+
+  const now = new Date();
+
+  const year =
+    now.getFullYear();
+
+  const today =
+    now.toISOString().split("T")[0];
+
+  const history =
+    learningData.activityHistory || [];
+
+  const activities =
+    learningData.activities || 0;
+
+  const bestStreak =
+    learningData.bestStreak || 0;
+
+  const validHistory =
+    history.filter(activity =>
+      activity &&
+      activity.date
+    );
+
+  function isToday(activity) {
+    return activity.date === today;
+  }
+
+  function isThisMonth(activity) {
+    return activity.date.startsWith(
+      `${year}-${String(
+        now.getMonth() + 1
+      ).padStart(2, "0")}-`
+    );
+  }
+
+  function isThisYear(activity) {
+    return activity.date.startsWith(
+      `${year}-`
+    );
+  }
+
+  function uniqueSubjects(list) {
+    return new Set(
+      list
+        .map(activity =>
+          activity.subject
+        )
+        .filter(subject =>
+          subject &&
+          subject !== "General"
+        )
+    ).size;
+  }
+
+  const todayActivities =
+    validHistory.filter(isToday);
+
+  const monthActivities =
+    validHistory.filter(isThisMonth);
+
+  const yearActivities =
+    validHistory.filter(isThisYear);
+
+  const weekStart =
+    new Date(now);
+
+  const day =
+    weekStart.getDay();
+
+  const mondayOffset =
+    day === 0
+      ? -6
+      : 1 - day;
+
+  weekStart.setDate(
+    weekStart.getDate() +
+    mondayOffset
+  );
+
+  const weekStartString =
+    weekStart
+      .toISOString()
+      .split("T")[0];
+
+  const weekActivities =
+    validHistory.filter(activity =>
+      activity.date >= weekStartString &&
+      activity.date <= today
+    );
+
+  const perfectScores =
+    validHistory.filter(activity =>
+      Number(activity.score) === 100
+    ).length;
+
+  const todayPerfect =
+    todayActivities.filter(activity =>
+      Number(activity.score) === 100
+    ).length;
+
+  const monthPerfect =
+    monthActivities.filter(activity =>
+      Number(activity.score) === 100
+    ).length;
+
+  const yearPerfect =
+    yearActivities.filter(activity =>
+      Number(activity.score) === 100
+    ).length;
+
+  const achievements = [
+
+    {
+      id: "achievement-first",
+      unlocked: activities >= 1
+    },
+
+    {
+      id: "achievement-builder",
+      unlocked: activities >= 10
+    },
+
+    {
+      id: "achievement-streak",
+      unlocked: bestStreak >= 7
+    },
+
+    {
+      id: "achievement-perfect",
+      unlocked: perfectScores >= 1
+    },
+
+    {
+      id: "achievement-rising",
+      unlocked: false
+    },
+
+    {
+      id: "achievement-champion",
+      unlocked: activities >= 50
+    }
+
+  ];
+
+  let unlockedCount = 0;
+
+  achievements.forEach(achievement => {
+
+    const element =
+      document.getElementById(
+        achievement.id
+      );
+
+    if (!element) return;
+
+    if (achievement.unlocked) {
+
+      unlockedCount++;
+
+      element.classList.remove(
+        "locked"
+      );
+
+      element.classList.add(
+        "unlocked"
+      );
+
+    } else {
+
+      element.classList.remove(
+        "unlocked"
+      );
+
+      element.classList.add(
+        "locked"
+      );
+
+    }
+
+  });
+
+  function setText(id, value) {
+
+    const element =
+      document.getElementById(id);
+
+    if (element) {
+      element.textContent = value;
+    }
+
+  }
+
+  setText(
+    "achievementYear",
+    `${year} ACHIEVEMENTS`
+  );
+
+  setText(
+    "achievementsUnlocked",
+    unlockedCount
+  );
+
+  setText(
+    "achievementActivities",
+    activities
+  );
+
+  setText(
+    "achievementBestStreak",
+    `${bestStreak} ${
+      bestStreak === 1
+        ? "day"
+        : "days"
+    }`
+  );
+
+  setText(
+    "achievementPerfectScores",
+    perfectScores
+  );
+
+  setText(
+    "achievementTodayActivities",
+    todayActivities.length
+  );
+
+  setText(
+    "achievementTodaySubjects",
+    uniqueSubjects(
+      todayActivities
+    )
+  );
+
+  setText(
+    "achievementTodayPerfect",
+    todayPerfect
+  );
+
+  setText(
+    "achievementWeekActivities",
+    weekActivities.length
+  );
+
+  setText(
+    "achievementWeekStreak",
+    `${Math.min(
+      bestStreak,
+      7
+    )} days`
+  );
+
+  setText(
+    "achievementWeekSubjects",
+    uniqueSubjects(
+      weekActivities
+    )
+  );
+
+  setText(
+    "achievementMonthActivities",
+    monthActivities.length
+  );
+
+  setText(
+    "achievementMonthPerfect",
+    monthPerfect
+  );
+
+  setText(
+    "achievementMonthSubjects",
+    uniqueSubjects(
+      monthActivities
+    )
+  );
+
+  setText(
+    "achievementYearActivities",
+    yearActivities.length
+  );
+
+  setText(
+    "achievementYearStreak",
+    `${bestStreak} ${
+      bestStreak === 1
+        ? "day"
+        : "days"
+    }`
+  );
+
+  setText(
+    "achievementYearSubjects",
+    uniqueSubjects(
+      yearActivities
+    )
+  );
+
+  setText(
+    "achievementYearPerfect",
+    yearPerfect
+  );
+
+}
 
     function updateStreak() {
       const today =
