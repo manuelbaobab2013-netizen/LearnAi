@@ -2310,16 +2310,16 @@ const supabaseClient = window.supabase.createClient(
       }
     }
 
-    function saveLearningData() {
-      saveJSON(
-        "learnAIProgress",
-        learningData
-      );
+ function saveLearningData() {
+  saveJSON(
+    "learnAIProgress",
+    learningData
+  );
 
-     updateHomeStats();
-updateStreakPage();
-    }
-
+  updateHomeStats();
+  updateStreakPage();
+  updateAchievementsPage();
+}
     /* =====================================================
        TOASTS
     ===================================================== */
@@ -2859,9 +2859,9 @@ updateStreakPage();
           content: answer
         });
 
-        saveCurrentConversation();
-        recordActivity();
-
+       saveCurrentConversation();
+recordActivity(currentSubject, null, "AI Tutor");
+        
       } catch (error) {
         thinking.textContent =
           `AI Error: ${error.message}`;
@@ -3455,7 +3455,11 @@ async function callAI(
     status.textContent =
       `Generated successfully${data.provider ? ` with ${data.provider}.` : "."}`;
 
-    recordActivity();
+   recordActivity(
+  document.getElementById("generatorSubject").value,
+  null,
+  generatorType
+);
 
     showToast(
       "Material generated successfully.",
@@ -3559,7 +3563,11 @@ Do not make the questions too advanced for the grade.
         status.textContent =
           "Worksheet generated successfully.";
 
-        recordActivity();
+      recordActivity(
+  document.getElementById("worksheetSubject").value,
+  null,
+  "Worksheet"
+);
 
         showToast(
           "Worksheet ready.",
@@ -3581,28 +3589,44 @@ Do not make the questions too advanced for the grade.
        PROGRESS
     ===================================================== */
 
-    function recordActivity() {
-      learningData.activities += 1;
+ function recordActivity(
+  subject = "General",
+  score = null,
+  type = "Activity"
+) {
+  learningData.activities += 1;
 
-      const today =
-        new Date()
-          .toISOString()
-          .split("T")[0];
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
 
-      if (
-        !learningData.studyDates.includes(
-          today
-        )
-      ) {
-        learningData.studyDates.push(
-          today
-        );
-      }
+  if (
+    !learningData.studyDates.includes(
+      today
+    )
+  ) {
+    learningData.studyDates.push(
+      today
+    );
+  }
 
-      updateStreak();
+  if (!learningData.activityHistory) {
+    learningData.activityHistory = [];
+  }
 
-      saveLearningData();
-    }
+  learningData.activityHistory.push({
+    date: today,
+    subject: subject,
+    score: score,
+    type: type
+  });
+
+  updateStreak();
+
+  saveLearningData();
+}
+    
 
     /* =====================================================
    ACHIEVEMENTS
