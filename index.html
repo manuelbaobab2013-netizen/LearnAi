@@ -714,7 +714,98 @@
     .premium-card li {
       margin: 9px 0;
     }
+/* =========================
+   STREAKS
+========================= */
 
+.streak-hero {
+  background: linear-gradient(135deg, #f97316, #eab308);
+  color: white;
+  border-radius: 25px;
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+}
+
+.streak-icon {
+  font-size: 70px;
+}
+
+.streak-hero h2 {
+  font-size: 38px;
+  margin-bottom: 5px;
+}
+
+.streak-hero p {
+  opacity: 0.9;
+}
+
+.streak-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.streak-card h3 {
+  margin-bottom: 8px;
+}
+
+.streak-value {
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.streak-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.streak-day {
+  text-align: center;
+  padding: 12px 5px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-weight: 800;
+}
+
+.streak-day.active {
+  background: var(--green-light);
+  border-color: var(--green);
+}
+
+.streak-milestones {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.streak-milestone {
+  padding: 15px;
+  text-align: center;
+  border-radius: 15px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.streak-milestone .fire {
+  font-size: 30px;
+}
+
+.streak-protection {
+  margin-top: 22px;
+  background: var(--green-light);
+  border-radius: 18px;
+  padding: 20px;
+}
     /* =========================
        SETTINGS
     ========================= */
@@ -1480,7 +1571,99 @@
         </div>
 
       </section>
+<!-- =========================
+     STREAKS
+========================= -->
 
+<section class="page" id="page-streaks">
+
+  <div class="page-header">
+    <h1>STREAKS 🔥</h1>
+    <p>Keep learning and build your study streak.</p>
+  </div>
+
+  <div class="streak-hero">
+    <div class="streak-icon">🔥</div>
+
+    <div>
+      <h2 id="currentStreakPage">0 DAYS</h2>
+      <p>Keep your streak alive by completing a learning activity today.</p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+
+    <div class="streak-card">
+      <h3>🔥 CURRENT STREAK</h3>
+      <div class="streak-value" id="streakCurrentValue">0 days</div>
+    </div>
+
+    <div class="streak-card">
+      <h3>🏆 BEST STREAK</h3>
+      <div class="streak-value" id="streakBestValue">0 days</div>
+    </div>
+
+    <div class="streak-card">
+      <h3>🎯 TODAY'S GOAL</h3>
+      <div class="streak-value">1 activity</div>
+    </div>
+
+    <div class="streak-card">
+      <h3>📚 ACTIVITIES</h3>
+      <div class="streak-value" id="streakActivitiesValue">0</div>
+    </div>
+
+  </div>
+
+  <div class="streak-card" style="margin-top:22px;">
+    <h2>WEEKLY STREAK</h2>
+    <p>Days you actually studied this week.</p>
+
+    <div class="streak-calendar" id="streakCalendar"></div>
+  </div>
+
+  <div class="streak-card" style="margin-top:22px;">
+    <h2>STREAK MILESTONES 🔥</h2>
+
+    <div class="streak-milestones">
+
+      <div class="streak-milestone">
+        <div class="fire">🔥</div>
+        <strong>3 DAYS</strong>
+      </div>
+
+      <div class="streak-milestone">
+        <div class="fire">🔥</div>
+        <strong>7 DAYS</strong>
+      </div>
+
+      <div class="streak-milestone">
+        <div class="fire">🔥</div>
+        <strong>14 DAYS</strong>
+      </div>
+
+      <div class="streak-milestone">
+        <div class="fire">🔥</div>
+        <strong>30 DAYS</strong>
+      </div>
+
+      <div class="streak-milestone">
+        <div class="fire">🔥</div>
+        <strong>100 DAYS</strong>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="streak-protection">
+    <h3>🛡️ STREAK PROTECTION</h3>
+    <p>
+      Complete at least one learning activity each day to keep your streak going.
+      Missing a day can break your current streak.
+    </p>
+  </div>
+
+</section>
       <!-- =========================
            PREMIUM
       ========================= -->
@@ -1952,7 +2135,8 @@ const supabaseClient = window.supabase.createClient(
         learningData
       );
 
-      updateHomeStats();
+     updateHomeStats();
+updateStreakPage();
     }
 
     /* =====================================================
@@ -3323,12 +3507,164 @@ Do not make the questions too advanced for the grade.
         average === null
           ? "—"
           : `${average}%`;
-    }
+    }}
 
-    /* =====================================================
-       SETTINGS
-    ===================================================== */
 
+/* =====================================================
+   STREAK PAGE
+===================================================== */
+
+function updateStreakPage() {
+
+  const current =
+    learningData.streak || 0;
+
+  const best =
+    learningData.bestStreak || 0;
+
+  const activities =
+    learningData.activities || 0;
+
+  const currentElement =
+    document.getElementById(
+      "currentStreakPage"
+    );
+
+  const currentValue =
+    document.getElementById(
+      "streakCurrentValue"
+    );
+
+  const bestValue =
+    document.getElementById(
+      "streakBestValue"
+    );
+
+  const activitiesValue =
+    document.getElementById(
+      "streakActivitiesValue"
+    );
+
+  if (currentElement) {
+    currentElement.textContent =
+      `${current} ${
+        current === 1
+          ? "DAY"
+          : "DAYS"
+      }`;
+  }
+
+  if (currentValue) {
+    currentValue.textContent =
+      `${current} ${
+        current === 1
+          ? "day"
+          : "days"
+      }`;
+  }
+
+  if (bestValue) {
+    bestValue.textContent =
+      `${best} ${
+        best === 1
+          ? "day"
+          : "days"
+      }`;
+  }
+
+  if (activitiesValue) {
+    activitiesValue.textContent =
+      activities;
+  }
+
+  const calendar =
+    document.getElementById(
+      "streakCalendar"
+    );
+
+  if (!calendar) return;
+
+  calendar.innerHTML = "";
+
+  const today =
+    new Date();
+
+  const day =
+    today.getDay();
+
+  const mondayOffset =
+    day === 0
+      ? -6
+      : 1 - day;
+
+  const monday =
+    new Date(today);
+
+  monday.setDate(
+    today.getDate() +
+    mondayOffset
+  );
+
+  const days = [
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI",
+    "SAT",
+    "SUN"
+  ];
+
+  for (let i = 0; i < 7; i++) {
+
+    const date =
+      new Date(monday);
+
+    date.setDate(
+      monday.getDate() + i
+    );
+
+    const dateString =
+      date
+        .toISOString()
+        .split("T")[0];
+
+    const studied =
+      (
+        learningData.studyDates ||
+        []
+      ).includes(dateString);
+
+    const dayElement =
+      document.createElement(
+        "div"
+      );
+
+    dayElement.className =
+      `streak-day ${
+        studied ? "active" : ""
+      }`;
+
+    dayElement.innerHTML = `
+      <div>${days[i]}</div>
+      <div style="
+        font-size:20px;
+        margin-top:5px;
+      ">
+        ${studied ? "🔥" : "○"}
+      </div>
+    `;
+
+    calendar.appendChild(
+      dayElement
+    );
+  }
+}
+
+
+/* =====================================================
+   SETTINGS
+===================================================== */
     const defaultSettings = {
       notifications: true,
       sound: true,
