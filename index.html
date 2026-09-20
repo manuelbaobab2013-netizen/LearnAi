@@ -1188,40 +1188,45 @@
     <span>HOME</span>
   </button>
 
-  <button class="nav-btn" data-page="tutor" onclick="openPage('tutor')">
-    <span>🤖</span>
-    <span>AI TUTOR</span>
-  </button>
+ <button class="nav-btn" data-page="tutor" onclick="openPage('tutor')">
+  <span>🤖</span>
+  <span>AI TUTOR</span>
+</button>
 
-  <button class="nav-btn" data-page="generator" onclick="openPage('generator')">
-    <span>✨</span>
-    <span>AI GENERATOR</span>
-  </button>
+<button class="nav-btn" data-page="generator" onclick="openPage('generator')">
+  <span>✨</span>
+  <span>AI GENERATOR</span>
+</button>
 
-  <button class="nav-btn" data-page="worksheets" onclick="openPage('worksheets')">
-    <span>📄</span>
-    <span>WORKSHEETS</span>
-  </button>
+<button class="nav-btn" data-page="worksheets" onclick="openPage('worksheets')">
+  <span>📄</span>
+  <span>WORKSHEETS</span>
+</button>
 
-  <!-- GOALS IS DECORATIVE -->
-  <div class="section-label">
-    GOALS
-  </div>
+<button class="nav-btn" data-page="practice-tests" onclick="openPage('practice-tests')">
+  <span>📝</span>
+  <span>PRACTICE TESTS</span>
+</button>
 
-  <button class="nav-btn" data-page="streaks" onclick="openPage('streaks')">
-    <span>🔥</span>
-    <span>STREAKS</span>
-  </button>
+<!-- GOALS IS DECORATIVE -->
+<div class="section-label">
+  GOALS
+</div>
 
-  <button class="nav-btn" data-page="achievements" onclick="openPage('achievements')">
-    <span>🏆</span>
-    <span>ACHIEVEMENTS</span>
-  </button>
+<button class="nav-btn" data-page="streaks" onclick="openPage('streaks')">
+  <span>🔥</span>
+  <span>STREAKS</span>
+</button>
 
-  <button class="nav-btn" data-page="progress" onclick="openPage('progress')">
-    <span>📈</span>
-    <span>PROGRESS</span>
-  </button>
+<button class="nav-btn" data-page="achievements" onclick="openPage('achievements')">
+  <span>🏆</span>
+  <span>ACHIEVEMENTS</span>
+</button>
+
+<button class="nav-btn" data-page="progress" onclick="openPage('progress')">
+  <span>📈</span>
+  <span>PROGRESS</span>
+</button>
 
   <button class="nav-btn" data-page="premium" onclick="openPage('premium')">
     <span>💎</span>
@@ -1596,6 +1601,181 @@
         </div>
 
       </section>
+      <!-- =========================
+     PRACTICE TESTS
+========================= -->
+
+<section class="page" id="page-practice-tests">
+
+  <div class="page-header">
+    <h1>PRACTICE TESTS 📝</h1>
+    <p>
+      Test your knowledge with a real 20-mark practice test.
+    </p>
+  </div>
+
+  <!-- TEST SETUP -->
+
+  <div class="panel" id="practiceTestSetup">
+
+    <div class="worksheet-controls">
+
+      <div class="field">
+        <label>GRADE</label>
+        <select id="practiceTestGrade"></select>
+      </div>
+
+      <div class="field">
+        <label>SUBJECT</label>
+        <select id="practiceTestSubject"></select>
+      </div>
+
+      <div class="field">
+        <label>TOPIC</label>
+        <input
+          id="practiceTestTopic"
+          placeholder="Example: Fractions"
+        >
+      </div>
+
+    </div>
+
+    <div
+      class="field"
+      style="max-width:700px;margin-top:15px;"
+    >
+      <label>DIFFICULTY</label>
+
+      <select id="practiceTestDifficulty">
+
+        <option value="Beginner">
+          Beginner
+        </option>
+
+        <option
+          value="Intermediate"
+          selected
+        >
+          Intermediate
+        </option>
+
+        <option value="Advanced">
+          Advanced
+        </option>
+
+      </select>
+    </div>
+
+    <button
+      class="primary-btn"
+      onclick="startPracticeTest()"
+      style="margin-top:20px;"
+    >
+      START 20-MARK TEST
+    </button>
+
+    <div
+      id="practiceTestStatus"
+      style="margin-top:15px;"
+    ></div>
+
+  </div>
+
+
+  <!-- TEST QUESTIONS -->
+
+  <div
+    class="panel hidden"
+    id="practiceTestArea"
+  >
+
+    <div class="page-header">
+
+      <h2 id="practiceTestTitle">
+        PRACTICE TEST
+      </h2>
+
+      <p id="practiceTestProgress">
+        20 questions • 20 marks
+      </p>
+
+    </div>
+
+    <div id="practiceQuestions"></div>
+
+    <button
+      class="primary-btn"
+      id="submitPracticeTestButton"
+      onclick="submitPracticeTest()"
+      style="margin-top:20px;"
+    >
+      SUBMIT TEST
+    </button>
+
+  </div>
+
+
+  <!-- TEST RESULTS -->
+
+  <div
+    class="panel hidden"
+    id="practiceTestResults"
+  >
+
+    <div
+      style="
+        text-align:center;
+        padding:25px;
+      "
+    >
+
+      <div
+        style="
+          font-size:50px;
+          margin-bottom:10px;
+        "
+      >
+        🎯
+      </div>
+
+      <h2>TEST COMPLETE</h2>
+
+      <p
+        id="practiceTestScore"
+        style="
+          font-size:36px;
+          font-weight:800;
+          margin:15px 0;
+        "
+      >
+        0 / 20
+      </p>
+
+      <p
+        id="practiceTestPercentage"
+        style="
+          font-size:24px;
+          font-weight:700;
+        "
+      >
+        0%
+      </p>
+
+      <p id="practiceTestMessage"></p>
+
+      <button
+        class="primary-btn"
+        onclick="resetPracticeTest()"
+        style="margin-top:20px;"
+      >
+        TAKE ANOTHER TEST
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
 <!-- =========================
      STREAKS
 ========================= -->
@@ -2741,52 +2921,67 @@ const supabaseClient = window.supabase.createClient(
       });
     }
 
-    function populateAllSelects() {
-      populateSelect(
-        "generatorGrade",
-        GRADES
-      );
+function populateAllSelects() {
 
-      populateSelect(
-        "worksheetGrade",
-        GRADES
-      );
+  populateSelect(
+    "generatorGrade",
+    GRADES
+  );
 
-      populateSelect(
-        "settingsGrade",
-        GRADES
-      );
+  populateSelect(
+    "worksheetGrade",
+    GRADES
+  );
 
-      populateSelect(
-        "generatorSubject",
-        SUBJECTS
-      );
+  populateSelect(
+    "settingsGrade",
+    GRADES
+  );
 
-      populateSelect(
-        "worksheetSubject",
-        SUBJECTS
-      );
+  populateSelect(
+    "practiceTestGrade",
+    GRADES
+  );
 
-      const savedGrade =
-        localStorage.getItem(
-          "learnAIGrade"
-        );
+  populateSelect(
+    "generatorSubject",
+    SUBJECTS
+  );
 
-      if (savedGrade) {
-        document.getElementById(
-          "generatorGrade"
-        ).value = savedGrade;
+  populateSelect(
+    "worksheetSubject",
+    SUBJECTS
+  );
 
-        document.getElementById(
-          "worksheetGrade"
-        ).value = savedGrade;
+  populateSelect(
+    "practiceTestSubject",
+    SUBJECTS
+  );
 
-        document.getElementById(
-          "settingsGrade"
-        ).value = savedGrade;
-      }
-    }
+  const savedGrade =
+    localStorage.getItem(
+      "learnAIGrade"
+    );
 
+  if (savedGrade) {
+
+    document.getElementById(
+      "generatorGrade"
+    ).value = savedGrade;
+
+    document.getElementById(
+      "worksheetGrade"
+    ).value = savedGrade;
+
+    document.getElementById(
+      "settingsGrade"
+    ).value = savedGrade;
+
+    document.getElementById(
+      "practiceTestGrade"
+    ).value = savedGrade;
+  }
+}
     /* =====================================================
        SUBJECTS
     ===================================================== */
@@ -3035,7 +3230,597 @@ async function callAI(
   }
 }
 
+/* =====================================================
+   PRACTICE TESTS
+===================================================== */
 
+let practiceTestQuestions = [];
+let practiceTestStarted = false;
+
+
+/* =====================================================
+   START PRACTICE TEST
+===================================================== */
+
+async function startPracticeTest() {
+
+  const grade =
+    document.getElementById(
+      "practiceTestGrade"
+    ).value;
+
+  const subject =
+    document.getElementById(
+      "practiceTestSubject"
+    ).value;
+
+  const topic =
+    document.getElementById(
+      "practiceTestTopic"
+    ).value.trim();
+
+  const difficulty =
+    document.getElementById(
+      "practiceTestDifficulty"
+    ).value;
+
+  const status =
+    document.getElementById(
+      "practiceTestStatus"
+    );
+
+
+  if (!topic) {
+
+    showToast(
+      "Please enter a topic.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  status.textContent =
+    "Creating your 20-mark practice test...";
+
+
+  try {
+
+    const prompt = `
+Create a school practice test for LearnAI.
+
+Grade: ${grade}
+Subject: ${subject}
+Topic: ${topic}
+Difficulty: ${difficulty}
+
+Create EXACTLY 20 multiple-choice questions.
+
+Each question is worth 1 mark.
+
+IMPORTANT:
+Return ONLY valid JSON.
+
+Use exactly this format:
+
+[
+  {
+    "question": "Question text",
+    "options": [
+      "Option A",
+      "Option B",
+      "Option C",
+      "Option D"
+    ],
+    "answer": 0
+  }
+]
+
+The "answer" must be the number
+of the correct option:
+
+0 = Option A
+1 = Option B
+2 = Option C
+3 = Option D
+
+Do not include explanations.
+Do not include markdown.
+Do not include code fences.
+Do not write anything before or after the JSON.
+`;
+
+
+    const answer =
+      await callAI(
+        prompt,
+        subject,
+        difficulty
+      );
+
+
+    let questions;
+
+
+    /* Try normal JSON first */
+
+    try {
+
+      questions =
+        JSON.parse(
+          answer.trim()
+        );
+
+    } catch {
+
+      /* Remove markdown code fences */
+
+      const cleaned =
+        answer
+          .replace(/```json/gi, "")
+          .replace(/```/g, "")
+          .trim();
+
+
+      questions =
+        JSON.parse(
+          cleaned
+        );
+    }
+
+
+    /* Validate the test */
+
+    if (
+      !Array.isArray(questions) ||
+      questions.length !== 20
+    ) {
+
+      throw new Error(
+        "The AI did not create exactly 20 questions."
+      );
+    }
+
+
+    for (
+      let i = 0;
+      i < questions.length;
+      i++
+    ) {
+
+      const item =
+        questions[i];
+
+      if (
+        !item.question ||
+        !Array.isArray(item.options) ||
+        item.options.length !== 4 ||
+        !Number.isInteger(
+          Number(item.answer)
+        ) ||
+        Number(item.answer) < 0 ||
+        Number(item.answer) > 3
+      ) {
+
+        throw new Error(
+          "The generated test has an invalid question."
+        );
+      }
+    }
+
+
+    practiceTestQuestions =
+      questions;
+
+    practiceTestStarted =
+      true;
+
+
+    /* Hide setup */
+
+    document.getElementById(
+      "practiceTestSetup"
+    ).classList.add("hidden");
+
+
+    /* Hide old results */
+
+    document.getElementById(
+      "practiceTestResults"
+    ).classList.add("hidden");
+
+
+    /* Show test */
+
+    document.getElementById(
+      "practiceTestArea"
+    ).classList.remove("hidden");
+
+
+    document.getElementById(
+      "practiceTestTitle"
+    ).textContent =
+      `${subject} — ${topic}`;
+
+
+    renderPracticeQuestions();
+
+
+    status.textContent = "";
+
+
+    showToast(
+      "Your practice test is ready!",
+      "success"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Practice Test error:",
+      error
+    );
+
+
+    status.textContent = "";
+
+
+    showToast(
+      error.message ||
+      "Could not create the practice test.",
+      "error"
+    );
+  }
+}
+
+
+/* =====================================================
+   DISPLAY QUESTIONS
+===================================================== */
+
+function renderPracticeQuestions() {
+
+  const container =
+    document.getElementById(
+      "practiceQuestions"
+    );
+
+  container.innerHTML = "";
+
+
+  practiceTestQuestions.forEach(
+    (item, index) => {
+
+      const questionCard =
+        document.createElement(
+          "div"
+        );
+
+      questionCard.className =
+        "panel";
+
+      questionCard.style.marginBottom =
+        "18px";
+
+
+      const questionTitle =
+        document.createElement(
+          "h3"
+        );
+
+      questionTitle.textContent =
+        `${index + 1}. ${item.question}`;
+
+
+      questionCard.appendChild(
+        questionTitle
+      );
+
+
+      const options =
+        document.createElement(
+          "div"
+        );
+
+      options.style.marginTop =
+        "15px";
+
+
+      item.options.forEach(
+        (option, optionIndex) => {
+
+          const label =
+            document.createElement(
+              "label"
+            );
+
+          label.style.display =
+            "block";
+
+          label.style.padding =
+            "12px";
+
+          label.style.marginBottom =
+            "8px";
+
+          label.style.border =
+            "1px solid var(--border)";
+
+          label.style.borderRadius =
+            "10px";
+
+          label.style.cursor =
+            "pointer";
+
+
+          const radio =
+            document.createElement(
+              "input"
+            );
+
+          radio.type =
+            "radio";
+
+          radio.name =
+            `practiceQuestion${index}`;
+
+          radio.value =
+            optionIndex;
+
+          radio.style.marginRight =
+            "10px";
+
+
+          label.appendChild(
+            radio
+          );
+
+          label.appendChild(
+            document.createTextNode(
+              option
+            )
+          );
+
+
+          options.appendChild(
+            label
+          );
+        }
+      );
+
+
+      questionCard.appendChild(
+        options
+      );
+
+
+      container.appendChild(
+        questionCard
+      );
+    }
+  );
+
+
+  document.getElementById(
+    "practiceTestProgress"
+  ).textContent =
+    "20 questions • 20 marks";
+}
+
+
+/* =====================================================
+   SUBMIT TEST
+===================================================== */
+
+function submitPracticeTest() {
+
+  if (
+    !practiceTestStarted ||
+    practiceTestQuestions.length !== 20
+  ) {
+
+    showToast(
+      "Please start a practice test first.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  let correctAnswers = 0;
+  let unanswered = 0;
+
+
+  practiceTestQuestions.forEach(
+    (item, index) => {
+
+      const selected =
+        document.querySelector(
+          `input[name="practiceQuestion${index}"]:checked`
+        );
+
+
+      if (!selected) {
+
+        unanswered++;
+
+        return;
+      }
+
+
+      if (
+        Number(selected.value) ===
+        Number(item.answer)
+      ) {
+
+        correctAnswers++;
+      }
+    }
+  );
+
+
+  /* Warn about unanswered questions */
+
+  if (unanswered > 0) {
+
+    const proceed =
+      confirm(
+        `You have ${unanswered} unanswered question${
+          unanswered === 1
+            ? ""
+            : "s"
+        }. Submit anyway?`
+      );
+
+    if (!proceed) {
+      return;
+    }
+  }
+
+
+  /* 20 questions = 20 marks */
+
+  const marks =
+    correctAnswers;
+
+  const percentage =
+    Math.round(
+      (marks / 20) * 100
+    );
+
+
+  const subject =
+    document.getElementById(
+      "practiceTestSubject"
+    ).value;
+
+
+  /* SAVE REAL RESULT TO PROGRESS */
+
+  recordActivity(
+    subject,
+    percentage,
+    "Practice Test"
+  );
+
+
+  /* Keep Home average scores updated */
+
+  if (
+    !Array.isArray(
+      learningData.scores
+    )
+  ) {
+
+    learningData.scores = [];
+  }
+
+
+  learningData.scores.push(
+    percentage
+  );
+
+
+  saveLearningData();
+
+
+  /* Show results */
+
+  document.getElementById(
+    "practiceTestArea"
+  ).classList.add("hidden");
+
+
+  document.getElementById(
+    "practiceTestResults"
+  ).classList.remove("hidden");
+
+
+  document.getElementById(
+    "practiceTestScore"
+  ).textContent =
+    `${marks} / 20`;
+
+
+  document.getElementById(
+    "practiceTestPercentage"
+  ).textContent =
+    `${percentage}%`;
+
+
+  const message =
+    document.getElementById(
+      "practiceTestMessage"
+    );
+
+
+  if (percentage >= 65) {
+
+    message.textContent =
+      "Great work! Keep building on your progress. 🎉";
+
+  } else {
+
+    message.textContent =
+      "Keep practising. Review this topic and try again. 📚";
+  }
+
+
+  practiceTestStarted =
+    false;
+
+
+  renderProgress();
+
+  updateHomeStats();
+
+
+  showToast(
+    `Test completed: ${marks}/20 (${percentage}%).`,
+    "success"
+  );
+}
+
+
+/* =====================================================
+   TAKE ANOTHER TEST
+===================================================== */
+
+function resetPracticeTest() {
+
+  practiceTestQuestions = [];
+
+  practiceTestStarted =
+    false;
+
+
+  document.getElementById(
+    "practiceTestResults"
+  ).classList.add("hidden");
+
+
+  document.getElementById(
+    "practiceTestArea"
+  ).classList.add("hidden");
+
+
+  document.getElementById(
+    "practiceTestSetup"
+  ).classList.remove("hidden");
+
+
+  document.getElementById(
+    "practiceTestTopic"
+  ).value = "";
+
+
+  document.getElementById(
+    "practiceQuestions"
+  ).innerHTML = "";
+}
     /* =====================================================
        NEW CHAT
     ===================================================== */
@@ -3610,48 +4395,848 @@ Do not make the questions too advanced for the grade.
       }
     }
 
-    /* =====================================================
-       PROGRESS
-    ===================================================== */
+   /* =====================================================
+   PROGRESS — REAL RESULTS DASHBOARD
+===================================================== */
 
- function recordActivity(
+/*
+   IMPORTANT:
+   This system only records REAL results.
+
+   A result is added when:
+   recordActivity(subject, score, type)
+
+   is called after a test/quiz is completed.
+*/
+
+
+/* =====================================================
+   RECORD ACTIVITY
+===================================================== */
+
+function recordActivity(
   subject = "General",
   score = null,
   type = "Activity"
 ) {
+
+  /* Make sure learningData exists */
+  if (!learningData) return;
+
+  /* Make sure required arrays exist */
+  if (!Array.isArray(learningData.studyDates)) {
+    learningData.studyDates = [];
+  }
+
+  if (!Array.isArray(learningData.activityHistory)) {
+    learningData.activityHistory = [];
+  }
+
+  if (
+    typeof learningData.activities !== "number"
+  ) {
+    learningData.activities = 0;
+  }
+
+  /* Count activity */
   learningData.activities += 1;
 
+  /* Today's date */
   const today =
     new Date()
       .toISOString()
       .split("T")[0];
 
+  /* Save study date */
   if (
-    !learningData.studyDates.includes(
-      today
-    )
+    !learningData.studyDates.includes(today)
   ) {
-    learningData.studyDates.push(
-      today
+    learningData.studyDates.push(today);
+  }
+
+  /* Only accept real numeric scores */
+  let realScore = null;
+
+  if (
+    typeof score === "number" &&
+    Number.isFinite(score)
+  ) {
+    realScore = Math.max(
+      0,
+      Math.min(100, score)
     );
   }
 
-  if (!learningData.activityHistory) {
+  /* Save result */
+  learningData.activityHistory.push({
+    date: today,
+    subject: subject || "General",
+    score: realScore,
+    type: type || "Activity"
+  });
+
+  /* Update streak */
+  if (
+    typeof updateStreak === "function"
+  ) {
+    updateStreak();
+  }
+
+  /* Save data */
+  if (
+    typeof saveLearningData === "function"
+  ) {
+    saveLearningData();
+  }
+
+  /* Update dashboard */
+  renderProgress();
+}
+
+
+/* =====================================================
+   GET REAL SCORED RESULTS
+===================================================== */
+
+function recordActivity(
+  subject = "General",
+  score = null,
+  type = "Activity"
+) {
+
+  /* Make sure learningData exists */
+  if (!learningData) return;
+
+  /* Make sure required arrays exist */
+  if (!Array.isArray(learningData.studyDates)) {
+    learningData.studyDates = [];
+  }
+
+  if (!Array.isArray(learningData.activityHistory)) {
     learningData.activityHistory = [];
   }
 
+  if (!Array.isArray(learningData.scores)) {
+    learningData.scores = [];
+  }
+
+  if (
+    typeof learningData.activities !== "number"
+  ) {
+    learningData.activities = 0;
+  }
+
+  /* Count activity */
+  learningData.activities += 1;
+
+  /* Today's date */
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  /* Save study date */
+  if (
+    !learningData.studyDates.includes(today)
+  ) {
+    learningData.studyDates.push(today);
+  }
+
+  /* Only accept real numeric scores */
+  let realScore = null;
+
+  if (
+    typeof score === "number" &&
+    Number.isFinite(score)
+  ) {
+
+    realScore = Math.max(
+      0,
+      Math.min(100, score)
+    );
+
+    /* Save real score for Home statistics */
+    learningData.scores.push(
+      realScore
+    );
+  }
+
+  /* Save result */
   learningData.activityHistory.push({
     date: today,
-    subject: subject,
-    score: score,
-    type: type
+    subject: subject || "General",
+    score: realScore,
+    type: type || "Activity"
   });
 
-  updateStreak();
+  /* Update streak */
+  if (
+    typeof updateStreak === "function"
+  ) {
+    updateStreak();
+  }
 
-  saveLearningData();
+  /* Save data */
+  if (
+    typeof saveLearningData === "function"
+  ) {
+    saveLearningData();
+  }
+
+  /* Update dashboard */
+  if (
+    typeof renderProgress === "function"
+  ) {
+    renderProgress();
+  }
 }
-    
+
+
+/* =====================================================
+   GET OVERALL PROGRESS STATS
+===================================================== */
+
+function getProgressStats() {
+
+  const results =
+    getScoredActivities();
+
+  if (results.length === 0) {
+
+    return {
+      attempts: 0,
+      average: null,
+      best: null,
+      latest: null
+    };
+  }
+
+  const scores =
+    results.map(
+      result => result.score
+    );
+
+  const total =
+    scores.reduce(
+      (sum, score) =>
+        sum + score,
+      0
+    );
+
+  const average =
+    total / scores.length;
+
+  return {
+
+    attempts:
+      results.length,
+
+    average:
+      Math.round(average),
+
+    best:
+      Math.max(...scores),
+
+    latest:
+      results[
+        results.length - 1
+      ].score
+  };
+}
+
+
+/* =====================================================
+   GET PROGRESS BY SUBJECT
+===================================================== */
+
+function getSubjectProgress() {
+
+  const results =
+    getScoredActivities();
+
+  const subjects = {};
+
+  results.forEach(result => {
+
+    const subject =
+      result.subject ||
+      "General";
+
+    if (!subjects[subject]) {
+      subjects[subject] = [];
+    }
+
+    subjects[subject].push(
+      result.score
+    );
+  });
+
+  return Object.entries(
+    subjects
+  ).map(
+    ([subject, scores]) => {
+
+      const total =
+        scores.reduce(
+          (sum, score) =>
+            sum + score,
+          0
+        );
+
+      const average =
+        total / scores.length;
+
+      return {
+
+        subject:
+          subject,
+
+        average:
+          Math.round(average),
+
+        attempts:
+          scores.length
+      };
+    }
+  );
+}
+
+
+/* =====================================================
+   DRAW COMPANY-STYLE PROGRESS GRAPH
+===================================================== */
+
+function drawProgressGraph() {
+
+  const canvas =
+    document.getElementById(
+      "progressGraph"
+    );
+
+  if (!canvas) return;
+
+  const ctx =
+    canvas.getContext("2d");
+
+  if (!ctx) return;
+
+  const results =
+    getScoredActivities();
+
+  const width =
+    canvas.width;
+
+  const height =
+    canvas.height;
+
+  /* Clear graph */
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  /* =================================================
+     NO RESULTS YET
+  ================================================= */
+
+  if (results.length === 0) {
+
+    ctx.fillStyle =
+      "#64748b";
+
+    ctx.font =
+      "16px Arial";
+
+    ctx.textAlign =
+      "center";
+
+    ctx.fillText(
+      "Complete a test to start your progress graph.",
+      width / 2,
+      height / 2
+    );
+
+    return;
+  }
+
+
+  /* =================================================
+     GRAPH SIZE
+  ================================================= */
+
+  const left = 60;
+  const right = 25;
+  const top = 25;
+  const bottom = 50;
+
+  const graphWidth =
+    width -
+    left -
+    right;
+
+  const graphHeight =
+    height -
+    top -
+    bottom;
+
+
+  /* =================================================
+     BACKGROUND GRID
+  ================================================= */
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle =
+    "#e2e8f0";
+
+  for (
+    let score = 0;
+    score <= 100;
+    score += 20
+  ) {
+
+    const y =
+      top +
+      graphHeight -
+      (
+        score / 100
+      ) *
+      graphHeight;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      left,
+      y
+    );
+
+    ctx.lineTo(
+      width - right,
+      y
+    );
+
+    ctx.stroke();
+
+    /* Y-axis labels */
+
+    ctx.fillStyle =
+      "#64748b";
+
+    ctx.font =
+      "12px Arial";
+
+    ctx.textAlign =
+      "right";
+
+    ctx.fillText(
+      score + "%",
+      left - 10,
+      y + 4
+    );
+  }
+
+
+  /* =================================================
+     CREATE DATA POINTS
+  ================================================= */
+
+  const points =
+    results.map(
+      (result, index) => {
+
+        let x;
+
+        if (
+          results.length === 1
+        ) {
+
+          x =
+            left +
+            graphWidth / 2;
+
+        } else {
+
+          x =
+            left +
+            (
+              index /
+              (results.length - 1)
+            ) *
+            graphWidth;
+        }
+
+        const score =
+          Math.max(
+            0,
+            Math.min(
+              100,
+              result.score
+            )
+          );
+
+        const y =
+          top +
+          graphHeight -
+          (
+            score / 100
+          ) *
+          graphHeight;
+
+        return {
+          x: x,
+          y: y,
+          score: score,
+          result: result
+        };
+      }
+    );
+
+
+  /* =================================================
+     SHADED AREA UNDER GRAPH
+  ================================================= */
+
+  if (
+    points.length > 1
+  ) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      points[0].x,
+      top + graphHeight
+    );
+
+    points.forEach(
+      point => {
+
+        ctx.lineTo(
+          point.x,
+          point.y
+        );
+      }
+    );
+
+    ctx.lineTo(
+      points[
+        points.length - 1
+      ].x,
+      top + graphHeight
+    );
+
+    ctx.closePath();
+
+    ctx.fillStyle =
+      "rgba(37, 99, 235, 0.08)";
+
+    ctx.fill();
+  }
+
+
+  /* =================================================
+     PERFORMANCE LINE
+  ================================================= */
+
+  ctx.beginPath();
+
+  points.forEach(
+    (point, index) => {
+
+      if (index === 0) {
+
+        ctx.moveTo(
+          point.x,
+          point.y
+        );
+
+      } else {
+
+        ctx.lineTo(
+          point.x,
+          point.y
+        );
+      }
+    }
+  );
+
+  ctx.strokeStyle =
+    "#2563eb";
+
+  ctx.lineWidth = 3;
+
+  ctx.lineJoin =
+    "round";
+
+  ctx.lineCap =
+    "round";
+
+  ctx.stroke();
+
+
+  /* =================================================
+     SCORE POINTS
+  ================================================= */
+
+  points.forEach(
+    point => {
+
+      /* White outer circle */
+
+      ctx.beginPath();
+
+      ctx.arc(
+        point.x,
+        point.y,
+        6,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle =
+        "#ffffff";
+
+      ctx.fill();
+
+
+      /* Blue inner circle */
+
+      ctx.beginPath();
+
+      ctx.arc(
+        point.x,
+        point.y,
+        4,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle =
+        "#2563eb";
+
+      ctx.fill();
+    }
+  );
+
+
+  /* =================================================
+     TEST LABELS
+  ================================================= */
+
+  ctx.fillStyle =
+    "#64748b";
+
+  ctx.font =
+    "11px Arial";
+
+  ctx.textAlign =
+    "center";
+
+  points.forEach(
+    (point, index) => {
+
+      const showLabel =
+        results.length <= 12 ||
+        index === 0 ||
+        index ===
+          results.length - 1 ||
+        index %
+          Math.ceil(
+            results.length / 8
+          ) === 0;
+
+      if (showLabel) {
+
+        ctx.fillText(
+          "Test " +
+          (index + 1),
+
+          point.x,
+
+          height - 15
+        );
+      }
+    }
+  );
+}
+
+
+/* =====================================================
+   RENDER PROGRESS DASHBOARD
+===================================================== */
+
+function renderProgress() {
+
+  const stats =
+    getProgressStats();
+
+  const subjects =
+    getSubjectProgress();
+
+
+  /* =================================================
+     STAT CARDS
+  ================================================= */
+
+  const attempts =
+    document.getElementById(
+      "progressAttempts"
+    );
+
+  const average =
+    document.getElementById(
+      "progressAverage"
+    );
+
+  const best =
+    document.getElementById(
+      "progressBest"
+    );
+
+  const latest =
+    document.getElementById(
+      "progressLatest"
+    );
+
+
+  /* Tests completed */
+
+  if (attempts) {
+
+    attempts.textContent =
+      stats.attempts;
+  }
+
+
+  /* Average */
+
+  if (average) {
+
+    average.textContent =
+      stats.average === null
+        ? "—"
+        : stats.average + "%";
+  }
+
+
+  /* Best */
+
+  if (best) {
+
+    best.textContent =
+      stats.best === null
+        ? "—"
+        : stats.best + "%";
+  }
+
+
+  /* Latest */
+
+  if (latest) {
+
+    latest.textContent =
+      stats.latest === null
+        ? "—"
+        : stats.latest + "%";
+  }
+
+
+  /* =================================================
+     SUBJECT PROGRESS
+  ================================================= */
+
+  const container =
+    document.getElementById(
+      "subjectProgressList"
+    );
+
+  if (container) {
+
+    container.innerHTML = "";
+
+
+    /* No results */
+
+    if (
+      subjects.length === 0
+    ) {
+
+      container.innerHTML = `
+        <div class="progress-empty">
+          No scored results yet.
+        </div>
+      `;
+
+    }
+
+    /* Real subject results */
+
+    else {
+
+      subjects.forEach(
+        subject => {
+
+          const row =
+            document.createElement(
+              "div"
+            );
+
+          row.className =
+            "subject-progress-row";
+
+          row.innerHTML = `
+            <div class="subject-progress-info">
+              <span>${subject.subject}</span>
+              <strong>${subject.average}%</strong>
+            </div>
+
+            <div class="subject-progress-bar">
+              <div
+                class="subject-progress-fill"
+                style="width:${subject.average}%">
+              </div>
+            </div>
+
+            <small>
+              ${subject.attempts}
+              ${
+                subject.attempts === 1
+                  ? "result"
+                  : "results"
+              }
+            </small>
+          `;
+
+          container.appendChild(
+            row
+          );
+        }
+      );
+    }
+  }
+
+
+  /* =================================================
+     DRAW GRAPH
+  ================================================= */
+
+  drawProgressGraph();
+}
+
+
+/* =====================================================
+   LOAD PROGRESS WHEN PAGE LOADS
+===================================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+    renderProgress();
+
+  }
+);
 
     /* =====================================================
    ACHIEVEMENTS
