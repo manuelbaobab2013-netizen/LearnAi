@@ -4753,13 +4753,14 @@ function drawProgressGraph() {
     ctx.stroke();
 
     /* Scale number */
-    ctx.fillStyle = "#6b7280";
+   ctx.fillStyle = "#111827";
+ctx.font = "bold 15px Arial";
 
-    ctx.fillText(
-      `${percent}%`,
-      paddingLeft - 12,
-      y + 5
-    );
+ctx.fillText(
+  `${percent}%`,
+  paddingLeft - 15,
+  y + 5
+);
   }
 
   /* =========================
