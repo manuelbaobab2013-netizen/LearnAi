@@ -1050,11 +1050,28 @@
 #page-achievements .achievements-grid {
   gap: 20px;
 }
+/* =========================
+   PROGRESS GRAPH
+========================= */
 
+.progress-graph-panel {
+  width: 100%;
+  min-height: 400px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#progressGraph {
+  display: block;
+  width: 100%;
+  height: 400px;
+  min-height: 400px;
+}
 </style>
 </head>
 
 <body>
+  
   <!-- =========================
        LOGOUT CONFIRMATION
   ========================= -->
@@ -2089,15 +2106,13 @@
   <div class="achievement-section">
     <h2>📈 SCORE PROGRESS</h2>
 
-    <div class="panel">
-      <canvas
-        id="progressGraph"
-        width="900"
-        height="400"
-        style="width:100%;max-width:100%;height:auto;"
-      ></canvas>
-    </div>
-  </div>
+    <div class="panel progress-graph-panel">
+  <canvas
+    id="progressGraph"
+    width="900"
+    height="400"
+  ></canvas>
+</div>
 
   <!-- SUBJECT PROGRESS -->
   <div class="achievement-section">
