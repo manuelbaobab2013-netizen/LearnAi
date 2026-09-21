@@ -4691,8 +4691,10 @@ function drawProgressGraph() {
   const ctx = canvas.getContext("2d");
 
   const stats = getProgressStats();
-  const scores = stats.scores || [];
-
+ const scores =
+  getScoredActivities().map(
+    result => result.score
+  );
   const width = canvas.width;
   const height = canvas.height;
 
