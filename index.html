@@ -4684,36 +4684,167 @@ function getSubjectProgress() {
 ===================================================== */
 
 function drawProgressGraph() {
-
-  const canvas =
-    document.getElementById(
-      "progressGraph"
-    );
+  const canvas = document.getElementById("progressGraph");
 
   if (!canvas) return;
 
-  const ctx =
-    canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
-  if (!ctx) return;
+  const stats = getProgressStats();
+  const scores = stats.scores || [];
 
-  const results =
-    getScoredActivities();
+  const width = canvas.width;
+  const height = canvas.height;
 
-  const width =
-    canvas.width;
+  ctx.clearRect(0, 0, width, height);
 
-  const height =
-    canvas.height;
+  /* No real results yet */
+  if (scores.length === 0) {
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "Complete a test to start your progress graph.",
+      width / 2,
+      height / 2
+    );
+    return;
+  }
 
-  /* Clear graph */
-  ctx.clearRect(
-    0,
-    0,
-    width,
-    height
+  const paddingLeft = 60;
+  const paddingRight = 25;
+  const paddingTop = 30;
+  const paddingBottom = 50;
+
+  const graphWidth =
+    width - paddingLeft - paddingRight;
+
+  const graphHeight =
+    height - paddingTop - paddingBottom;
+
+  /* =========================
+     0–100% SCALE
+  ========================= */
+
+  ctx.font = "14px Arial";
+  ctx.textAlign = "right";
+
+  for (let percent = 0; percent <= 100; percent += 20) {
+
+    const y =
+      paddingTop +
+      graphHeight -
+      (percent / 100) * graphHeight;
+
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, y);
+    ctx.lineTo(width - paddingRight, y);
+    ctx.strokeStyle = "#e5e7eb";
+    ctx.stroke();
+
+    ctx.fillStyle = "#6b7280";
+    ctx.fillText(
+      `${percent}%`,
+      paddingLeft - 10,
+      y + 5
+    );
+  }
+
+  /* =========================
+     SCORE LINE
+  ========================= */
+
+  ctx.beginPath();
+
+  scores.forEach((score, index) => {
+
+    const x =
+      paddingLeft +
+      (scores.length === 1
+        ? graphWidth / 2
+        : (index / (scores.length - 1)) * graphWidth);
+
+    const y =
+      paddingTop +
+      graphHeight -
+      (score / 100) * graphHeight;
+
+    if (index === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  });
+
+  ctx.strokeStyle = "#2563eb";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  /* =========================
+     SCORE POINTS
+  ========================= */
+
+  scores.forEach((score, index) => {
+
+    const x =
+      paddingLeft +
+      (scores.length === 1
+        ? graphWidth / 2
+        : (index / (scores.length - 1)) * graphWidth);
+
+    const y =
+      paddingTop +
+      graphHeight -
+      (score / 100) * graphHeight;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+
+    ctx.fillStyle = "#2563eb";
+    ctx.fill();
+
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    /* Score label */
+    ctx.fillStyle = "#111827";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+
+    ctx.fillText(
+      `${score}%`,
+      x,
+      y - 12
+    );
+  });
+
+  /* =========================
+     AXIS LABELS
+  ========================= */
+
+  ctx.fillStyle = "#6b7280";
+  ctx.font = "13px Arial";
+
+  ctx.textAlign = "center";
+  ctx.fillText(
+    "TEST ATTEMPTS",
+    width / 2,
+    height - 12
   );
 
+  ctx.save();
+
+  ctx.translate(15, height / 2);
+  ctx.rotate(-Math.PI / 2);
+
+  ctx.fillText(
+    "SCORE",
+    0,
+    0
+  );
+
+  ctx.restore();
+}
 
   /* =================================================
      NO RESULTS YET
