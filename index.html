@@ -4690,32 +4690,23 @@ function drawProgressGraph() {
 
   const ctx = canvas.getContext("2d");
 
-  const stats = getProgressStats();
- const scores =
-  getScoredActivities().map(
+  const scores = getScoredActivities().map(
     result => result.score
   );
+
   const width = canvas.width;
   const height = canvas.height;
 
   ctx.clearRect(0, 0, width, height);
 
-  /* No real results yet */
-  if (scores.length === 0) {
-    ctx.font = "18px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(
-      "Complete a test to start your progress graph.",
-      width / 2,
-      height / 2
-    );
-    return;
-  }
+  /* =========================
+     GRAPH DIMENSIONS
+  ========================= */
 
-  const paddingLeft = 60;
-  const paddingRight = 25;
+  const paddingLeft = 65;
+  const paddingRight = 30;
   const paddingTop = 30;
-  const paddingBottom = 50;
+  const paddingBottom = 55;
 
   const graphWidth =
     width - paddingLeft - paddingRight;
@@ -4724,31 +4715,119 @@ function drawProgressGraph() {
     height - paddingTop - paddingBottom;
 
   /* =========================
-     0–100% SCALE
+     Y-AXIS SCALE: 0–100%
   ========================= */
 
-  ctx.font = "14px Arial";
+  ctx.font = "13px Arial";
   ctx.textAlign = "right";
 
-  for (let percent = 0; percent <= 100; percent += 20) {
+  for (let percent = 100; percent >= 0; percent -= 20) {
 
     const y =
       paddingTop +
       graphHeight -
       (percent / 100) * graphHeight;
 
+    /* Horizontal grid line */
     ctx.beginPath();
     ctx.moveTo(paddingLeft, y);
     ctx.lineTo(width - paddingRight, y);
+
     ctx.strokeStyle = "#e5e7eb";
+    ctx.lineWidth = 1;
     ctx.stroke();
 
+    /* Scale number */
     ctx.fillStyle = "#6b7280";
+
     ctx.fillText(
       `${percent}%`,
-      paddingLeft - 10,
+      paddingLeft - 12,
       y + 5
     );
+  }
+
+  /* =========================
+     X-AXIS
+  ========================= */
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    paddingLeft,
+    paddingTop + graphHeight
+  );
+
+  ctx.lineTo(
+    width - paddingRight,
+    paddingTop + graphHeight
+  );
+
+  ctx.strokeStyle = "#9ca3af";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  /* =========================
+     Y-AXIS
+  ========================= */
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    paddingLeft,
+    paddingTop
+  );
+
+  ctx.lineTo(
+    paddingLeft,
+    paddingTop + graphHeight
+  );
+
+  ctx.strokeStyle = "#9ca3af";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  /* =========================
+     NO RESULTS
+  ========================= */
+
+  if (scores.length === 0) {
+
+    ctx.font = "16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#6b7280";
+
+    ctx.fillText(
+      "Complete a test to start tracking your progress.",
+      width / 2,
+      height / 2
+    );
+
+    /* X-axis label */
+    ctx.font = "13px Arial";
+    ctx.fillStyle = "#6b7280";
+
+    ctx.fillText(
+      "TEST ATTEMPTS",
+      width / 2,
+      height - 15
+    );
+
+    /* Y-axis label */
+    ctx.save();
+
+    ctx.translate(18, height / 2);
+    ctx.rotate(-Math.PI / 2);
+
+    ctx.fillText(
+      "SCORE",
+      0,
+      0
+    );
+
+    ctx.restore();
+
+    return;
   }
 
   /* =========================
@@ -4778,7 +4857,7 @@ function drawProgressGraph() {
   });
 
   ctx.strokeStyle = "#2563eb";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 3;
   ctx.stroke();
 
   /* =========================
@@ -4798,25 +4877,44 @@ function drawProgressGraph() {
       graphHeight -
       (score / 100) * graphHeight;
 
+    /* Point */
     ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
+
+    ctx.arc(
+      x,
+      y,
+      5,
+      0,
+      Math.PI * 2
+    );
 
     ctx.fillStyle = "#2563eb";
     ctx.fill();
 
+    /* White border */
     ctx.strokeStyle = "#ffffff";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    /* Score label */
-    ctx.fillStyle = "#111827";
+    /* Score */
     ctx.font = "12px Arial";
     ctx.textAlign = "center";
+    ctx.fillStyle = "#111827";
 
     ctx.fillText(
       `${score}%`,
       x,
       y - 12
+    );
+
+    /* Attempt number */
+    ctx.font = "11px Arial";
+    ctx.fillStyle = "#6b7280";
+
+    ctx.fillText(
+      `${index + 1}`,
+      x,
+      paddingTop + graphHeight + 20
     );
   });
 
@@ -4824,10 +4922,10 @@ function drawProgressGraph() {
      AXIS LABELS
   ========================= */
 
-  ctx.fillStyle = "#6b7280";
   ctx.font = "13px Arial";
-
+  ctx.fillStyle = "#6b7280";
   ctx.textAlign = "center";
+
   ctx.fillText(
     "TEST ATTEMPTS",
     width / 2,
@@ -4836,7 +4934,7 @@ function drawProgressGraph() {
 
   ctx.save();
 
-  ctx.translate(15, height / 2);
+  ctx.translate(18, height / 2);
   ctx.rotate(-Math.PI / 2);
 
   ctx.fillText(
@@ -4847,7 +4945,6 @@ function drawProgressGraph() {
 
   ctx.restore();
 }
-
  
 
 
