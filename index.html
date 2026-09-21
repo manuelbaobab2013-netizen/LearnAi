@@ -2049,6 +2049,68 @@
   </div>
 
 </section>
+<!-- =========================
+     PROGRESS
+========================= -->
+
+<section class="page" id="page-progress">
+
+  <div class="page-header">
+    <h1>YOUR PROGRESS 📈</h1>
+    <p>Track your real learning results and see how you are improving.</p>
+  </div>
+
+  <!-- OVERVIEW STATS -->
+  <div class="stats-grid">
+
+    <div class="achievement-card">
+      <h3>📚 ATTEMPTS</h3>
+      <div class="achievement-value" id="progressAttempts">0</div>
+    </div>
+
+    <div class="achievement-card">
+      <h3>📊 AVERAGE</h3>
+      <div class="achievement-value" id="progressAverage">0%</div>
+    </div>
+
+    <div class="achievement-card">
+      <h3>🏆 BEST SCORE</h3>
+      <div class="achievement-value" id="progressBest">0%</div>
+    </div>
+
+    <div class="achievement-card">
+      <h3>🎯 LATEST SCORE</h3>
+      <div class="achievement-value" id="progressLatest">0%</div>
+    </div>
+
+  </div>
+
+  <!-- PROGRESS GRAPH -->
+  <div class="achievement-section">
+    <h2>📈 SCORE PROGRESS</h2>
+
+    <div class="panel">
+      <canvas
+        id="progressGraph"
+        width="900"
+        height="400"
+        style="width:100%;max-width:100%;height:auto;"
+      ></canvas>
+    </div>
+  </div>
+
+  <!-- SUBJECT PROGRESS -->
+  <div class="achievement-section">
+    <h2>📚 SUBJECT PROGRESS</h2>
+
+    <div id="subjectProgressList">
+      <p class="empty-achievements">
+        Complete activities to start tracking your subject progress.
+      </p>
+    </div>
+  </div>
+
+</section>      
       <!-- =========================
            PREMIUM
       ========================= -->
