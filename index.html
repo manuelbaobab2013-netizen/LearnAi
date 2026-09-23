@@ -2849,10 +2849,120 @@ const supabaseClient = window.supabase.createClient(
       }
     }
 
+
+    async function signInWithGoogle() {
+      try {
+        const { error } =
+          await supabaseClient.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+              redirectTo: window.location.origin
+            }
+          });
+
+        if (error) throw error;
+
+      } catch (error) {
+        console.error(error);
+
+        showAuthMessage(
+          getFriendlyAuthError(error),
+          "error"
+        );
+      }
+    }
+
+
+    async function signInWithApple() {
+      try {
+        const { error } =
+          await supabaseClient.auth.signInWithOAuth({
+            provider: "apple",
+            options: {
+              redirectTo: window.location.origin
+            }
+          });
+
+        if (error) throw error;
+
+      } catch (error) {
+        console.error(error);
+
+        showAuthMessage(
+          getFriendlyAuthError(error),
+          "error"
+        );
+      }
+    }
+
+
+    async function signInWithMicrosoft() {
+      try {
+        const { error } =
+          await supabaseClient.auth.signInWithOAuth({
+            provider: "azure",
+            options: {
+              redirectTo: window.location.origin
+            }
+          });
+
+        if (error) throw error;
+
+      } catch (error) {
+        console.error(error);
+
+        showAuthMessage(
+          getFriendlyAuthError(error),
+          "error"
+        );
+      }
+    }
+
+
+    async function forgotPassword() {
+      const email =
+        document.getElementById("authEmail")
+          .value
+          .trim();
+
+      if (!email) {
+        showAuthMessage(
+          "Enter your email address first.",
+          "error"
+        );
+        return;
+      }
+
+      try {
+        const { error } =
+          await supabaseClient.auth.resetPasswordForEmail(
+            email,
+            {
+              redirectTo: window.location.origin
+            }
+          );
+
+        if (error) throw error;
+
+        showAuthMessage(
+          "Password reset email sent. Check your inbox.",
+          "success"
+        );
+
+      } catch (error) {
+        console.error(error);
+
+        showAuthMessage(
+          getFriendlyAuthError(error),
+          "error"
+        );
+      }
+    }
+
+
     function getFriendlyAuthError(error) {
       const message =
         String(error?.message || error);
-
       if (
         message.toLowerCase().includes("invalid login")
       ) {
