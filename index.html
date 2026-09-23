@@ -2101,20 +2101,20 @@
     </div>
 
   </div>
-
   <!-- PROGRESS GRAPH -->
-  <div class="achievement-section">
-    <h2>📈 SCORE PROGRESS</h2>
+<div class="achievement-section">
+  <h2>📈 SCORE PROGRESS</h2>
 
-    <div class="panel progress-graph-panel">
-  <canvas
-    id="progressGraph"
-    width="900"
-    height="400"
-  ></canvas>
+  <div class="panel progress-graph-panel">
+    <canvas
+      id="progressGraph"
+      width="900"
+      height="400"
+    ></canvas>
+  </div>
 </div>
 
-  <!-- SUBJECT PROGRESS -->
+<!-- SUBJECT PROGRESS -->
   <div class="achievement-section">
     <h2>📚 SUBJECT PROGRESS</h2>
 
@@ -4582,7 +4582,21 @@ function recordActivity(
     renderProgress();
   }
 }
+function getScoredActivities() {
+  if (
+    !learningData ||
+    !Array.isArray(learningData.activityHistory)
+  ) {
+    return [];
+  }
 
+  return learningData.activityHistory.filter(
+    activity =>
+      activity &&
+      typeof activity.score === "number" &&
+      Number.isFinite(activity.score)
+  );
+}
 
 /* =====================================================
    GET OVERALL PROGRESS STATS
@@ -4697,7 +4711,6 @@ function getSubjectProgress() {
 /* =====================================================
    DRAW COMPANY-STYLE PROGRESS GRAPH
 ===================================================== */
-
 function drawProgressGraph() {
   const canvas = document.getElementById("progressGraph");
 
