@@ -3272,8 +3272,8 @@ function populateAllSelects() {
             ).value
           );
 
-        thinking.textContent =
-          answer;
+        thinking.innerHTML =
+  formatTutorResponse(answer);
 
         currentConversation.push({
           role: "user",
@@ -3319,7 +3319,18 @@ recordActivity(currentSubject, null, "AI Tutor");
 
       return message;
     }
-
+function formatTutorResponse(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^# (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^- (.*)$/gm, "• $1")
+    .replace(/\n/g, "<br>");
+}
     function handleEnter(event) {
       if (
         event.key === "Enter" &&
