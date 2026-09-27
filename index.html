@@ -4201,41 +4201,53 @@ function resetPracticeTest() {
       );
     }
 
-    function renderConversations() {
-      const list =
-        document.getElementById(
-          "conversationList"
-        );
+  function renderConversations() {
 
-      if (!conversations.length) {
-        list.innerHTML = `
-          <div style="padding:15px;color:var(--muted);font-size:13px;">
-            Your conversations will appear here.
-          </div>
-        `;
+  const list =
+    document.getElementById(
+      "conversationList"
+    );
 
-        return;
+  if (!conversations.length) {
+
+    list.innerHTML = `
+      <div style="padding:15px;color:var(--muted);font-size:13px;">
+        Your conversations will appear here.
+      </div>
+    `;
+
+    return;
+  }
+
+  list.innerHTML = "";
+
+  [...conversations]
+    .reverse()
+    .forEach(conversation => {
+
+      const item =
+        document.createElement("div");
+
+      item.className =
+        "conversation-item";
+
+      if (
+        conversation.id ===
+        currentConversationId
+      ) {
+        item.classList.add("active");
       }
 
-      list.innerHTML = "";
+      item.innerHTML = `
+        <div style="
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:8px;
+        ">
 
-      [...conversations]
-        .reverse()
-        .forEach(conversation => {
-          const item =
-            document.createElement("div");
+          <div style="min-width:0;flex:1;">
 
-          item.className =
-            "conversation-item";
-
-          if (
-            conversation.id ===
-            currentConversationId
-          ) {
-            item.classList.add("active");
-          }
-
-          item.innerHTML = `
             <div class="conversation-title">
               ${escapeHTML(
                 conversation.title
@@ -4248,61 +4260,55 @@ function resetPracticeTest() {
                 "General"
               )}
             </div>
-          `;
 
-          item.onclick = () =>
-            openConversation(
-              conversation.id
-            );
+          </div>
 
-          list.appendChild(item);
-        });
-    }
+          <button
+            class="conversation-menu-btn"
+            title="Options"
+            onclick="event.stopPropagation(); toggleConversationMenu(${conversation.id})"
+          >
+            ⋮
+          </button>
 
-    function openConversation(id) {
-      const conversation =
-        conversations.find(
-          item => item.id === id
+        </div>
+
+        <div
+          class="conversation-menu"
+          id="conversation-menu-${conversation.id}"
+          style="display:none;"
+        >
+
+          <button
+            onclick="event.stopPropagation(); renameConversation(${conversation.id})"
+          >
+            ✏️ Rename
+          </button>
+
+          <button
+            onclick="event.stopPropagation(); deleteConversation(${conversation.id})"
+          >
+            🗑️ Delete
+          </button>
+
+          <button
+            onclick="event.stopPropagation(); shareConversation(${conversation.id})"
+          >
+            🔗 Share
+          </button>
+
+        </div>
+      `;
+
+      item.onclick = () =>
+        openConversation(
+          conversation.id
         );
 
-      if (!conversation) return;
+      list.appendChild(item);
 
-      currentConversationId =
-        id;
-
-      currentConversation =
-        conversation.messages || [];
-
-      currentSubject =
-        conversation.subject ||
-        "General";
-
-      const chat =
-        document.getElementById(
-          "chat"
-        );
-
-      chat.innerHTML = "";
-
-      currentConversation.forEach(
-        message => {
-          addMessage(
-            message.role === "assistant"
-              ? "ai"
-              : "user",
-            message.content
-          );
-        }
-      );
-
-      buildSubjectButtons();
-      renderConversations();
-
-      showToast(
-        "Conversation opened.",
-        "success"
-      );
-    }
+    });
+}
 
     /* =====================================================
        PROJECT AI
