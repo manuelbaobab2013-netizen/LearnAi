@@ -1605,10 +1605,11 @@
       <div class="field">
         <label>QUESTIONS</label>
         <select id="worksheetCount">
-          <option value="5">5</option>
-          <option value="10" selected>10</option>
-          <option value="15">15</option>
-          <option value="20">20</option>
+       <option value="10" selected>10</option>
+<option value="20">20</option>
+<option value="30">30</option>
+<option value="40">40</option>
+<option value="50">50</option>
         </select>
       </div>
 
@@ -4776,15 +4777,12 @@ function submitWorksheet() {
     return;
   }
 
-
   const answerInputs =
     document.querySelectorAll(
       ".worksheet-answer"
     );
 
-
   let correct = 0;
-
 
   currentWorksheet.forEach(
     (question, index) => {
@@ -4793,7 +4791,6 @@ function submitWorksheet() {
         answerInputs[index];
 
       if (!input) return;
-
 
       const studentAnswer =
         input.value
@@ -4805,12 +4802,9 @@ function submitWorksheet() {
           .trim()
           .toLowerCase();
 
-
       if (
-        studentAnswer ===
-        correctAnswer
+        studentAnswer === correctAnswer
       ) {
-
         correct++;
 
         input.style.border =
@@ -4820,61 +4814,82 @@ function submitWorksheet() {
 
         input.style.border =
           "2px solid #dc2626";
-
       }
-
     }
   );
 
-
   const total =
     currentWorksheet.length;
-
 
   const percentage =
     Math.round(
       (correct / total) * 100
     );
 
-
-  const score =
-    Math.round(
-      (correct / total) * 20
-    );
-
-
   const scoreBox =
     document.getElementById(
       "worksheetScore"
     );
 
+  let emoji = "💪";
+  let message = "Keep going and keep practicing!";
+
+  if (percentage === 100) {
+    emoji = "🏆🔥";
+    message = "Perfect work! You got everything correct!";
+  } else if (percentage >= 90) {
+    emoji = "🏆🔥";
+    message =
+      "Excellent work! Work harder to achieve a perfect score!";
+  } else if (percentage >= 70) {
+    emoji = "🔥";
+    message = "Good work! Keep pushing!";
+  } else if (percentage >= 50) {
+    emoji = "💪";
+    message = "Keep going! You are improving!";
+  } else {
+    emoji = "🌱";
+    message = "Try again next time! Keep practicing!";
+  }
 
   scoreBox.innerHTML = `
-    <div style="font-size:22px;font-weight:bold;">
-      Score: ${score}/${20}
+    <div style="
+      font-size:28px;
+      font-weight:bold;
+      margin-bottom:10px;
+    ">
+      ${emoji}
     </div>
 
-    <div style="margin-top:8px;">
-      ${correct} correct out of ${total}
+    <div style="
+      font-size:24px;
+      font-weight:bold;
+    ">
+      ${correct}/${total}
     </div>
 
-    <div style="margin-top:8px;">
+    <div style="
+      font-size:20px;
+      margin-top:6px;
+    ">
       ${percentage}%
+    </div>
+
+    <div style="
+      font-size:18px;
+      margin-top:10px;
+    ">
+      ${message}
     </div>
   `;
 
-
   scoreBox.style.display =
     "block";
-
-
-  /* Save REAL worksheet result */
 
   const subject =
     document.getElementById(
       "worksheetSubject"
     ).value;
-
 
   recordActivity(
     subject,
@@ -4882,9 +4897,8 @@ function submitWorksheet() {
     "Worksheet"
   );
 
-
   showToast(
-    `You scored ${score}/20`,
+    `You scored ${correct}/${total}`,
     "success"
   );
 }
