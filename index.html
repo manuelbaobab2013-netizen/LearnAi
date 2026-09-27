@@ -4475,9 +4475,11 @@ function resetPracticeTest() {
       );
     }
 
-    result.textContent =
-      data.answer ||
-      "No material was generated.";
+    result.innerHTML =
+  formatTutorResponse(
+    data.answer ||
+    "No material was generated."
+  );
 
     status.textContent =
       `Generated successfully${data.provider ? ` with ${data.provider}.` : "."}`;
@@ -4584,8 +4586,8 @@ Do not make the questions too advanced for the grade.
             grade
           );
 
-        result.textContent =
-          answer;
+        result.innerHTML =
+  formatTutorResponse(answer);
 
         status.textContent =
           "Worksheet generated successfully.";
