@@ -1575,68 +1575,94 @@
         </div>
 
       </section>
-
       <!-- =========================
-           WORKSHEETS
-      ========================= -->
+     WORKSHEETS
+========================= -->
 
-      <section class="page" id="page-worksheets">
+<section class="page" id="page-worksheets">
 
-        <div class="page-header">
-          <h1>WORKSHEETS</h1>
-          <p>
-            Generate practice worksheets for any school level.
-          </p>
-        </div>
+  <div class="page-header">
+    <h1>WORKSHEETS 📝</h1>
+    <p>
+      Practice your skills with interactive worksheets.
+    </p>
+  </div>
 
-        <div class="panel">
+  <div class="panel">
 
-          <div class="worksheet-controls">
+    <div class="worksheet-controls">
 
-            <div class="field">
-              <label>GRADE</label>
-              <select id="worksheetGrade"></select>
-            </div>
+      <div class="field">
+        <label>GRADE</label>
+        <select id="worksheetGrade"></select>
+      </div>
 
-            <div class="field">
-              <label>SUBJECT</label>
-              <select id="worksheetSubject"></select>
-            </div>
+      <div class="field">
+        <label>SUBJECT</label>
+        <select id="worksheetSubject"></select>
+      </div>
 
-            <div class="field">
-              <label>QUESTIONS</label>
-              <select id="worksheetCount">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="15">15</option>
-                <option value="20">20</option>
-              </select>
-            </div>
+      <div class="field">
+        <label>QUESTIONS</label>
+        <select id="worksheetCount">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+        </select>
+      </div>
 
-          </div>
+    </div>
 
-          <div class="field" style="max-width:700px;margin-top:15px;">
-            <label>TOPIC</label>
-            <input
-              id="worksheetTopic"
-              placeholder="Example: Decimals"
-            >
-          </div>
+    <div
+      class="field"
+      style="max-width:700px;margin-top:15px;"
+    >
+      <label>TOPIC</label>
 
-          <button class="primary-btn" onclick="generateWorksheet()">
-            GENERATE WORKSHEET
-          </button>
+      <input
+        id="worksheetTopic"
+        placeholder="Example: Decimals"
+      >
+    </div>
 
-          <div id="worksheetStatus" style="margin-top:15px;"></div>
+    <button
+      class="primary-btn"
+      onclick="generateWorksheet()"
+    >
+      GENERATE WORKSHEET
+    </button>
 
-          <div
-            id="worksheetResult"
-            class="worksheet-result"
-          ></div>
+    <div
+      id="worksheetStatus"
+      style="margin-top:15px;"
+    ></div>
 
-        </div>
+    <!-- INTERACTIVE WORKSHEET -->
 
-      </section>
+    <div
+      id="worksheetResult"
+      class="worksheet-result"
+    ></div>
+
+    <button
+      id="submitWorksheetBtn"
+      class="primary-btn"
+      style="display:none;margin-top:20px;"
+      onclick="submitWorksheet()"
+    >
+      SUBMIT WORKSHEET
+    </button>
+
+    <div
+      id="worksheetScore"
+      style="display:none;margin-top:20px;"
+    ></div>
+
+  </div>
+
+</section>
+  
       <!-- =========================
      PRACTICE TESTS
 ========================= -->
@@ -4511,109 +4537,357 @@ function resetPracticeTest() {
   }
 }
     /* =====================================================
-       WORKSHEET GENERATOR
-    ===================================================== */
+   WORKSHEET GENERATOR
+===================================================== */
 
-    async function generateWorksheet() {
-      const grade =
-        document.getElementById(
-          "worksheetGrade"
-        ).value;
+let currentWorksheet = [];
 
-      const subject =
-        document.getElementById(
-          "worksheetSubject"
-        ).value;
 
-      const count =
-        document.getElementById(
-          "worksheetCount"
-        ).value;
+async function generateWorksheet() {
 
-      const topic =
-        document.getElementById(
-          "worksheetTopic"
-        ).value.trim();
+  const grade =
+    document.getElementById("worksheetGrade").value;
 
-      if (!topic) {
-        showToast(
-          "Please enter a worksheet topic.",
-          "error"
-        );
+  const subject =
+    document.getElementById("worksheetSubject").value;
 
-        return;
-      }
+  const count =
+    Number(
+      document.getElementById("worksheetCount").value
+    );
 
-      const status =
-        document.getElementById(
-          "worksheetStatus"
-        );
+  const topic =
+    document.getElementById("worksheetTopic").value.trim();
 
-      const result =
-        document.getElementById(
-          "worksheetResult"
-        );
+  const status =
+    document.getElementById("worksheetStatus");
 
-      status.textContent =
-        "Generating worksheet...";
+  const result =
+    document.getElementById("worksheetResult");
 
-      result.textContent =
-        "";
+  const submitButton =
+    document.getElementById("submitWorksheetBtn");
 
-      try {
-        const prompt = `
-Create a school worksheet.
+  const scoreBox =
+    document.getElementById("worksheetScore");
+
+
+  if (!topic) {
+    showToast(
+      "Please enter a worksheet topic",
+      "error"
+    );
+    return;
+  }
+
+
+  status.textContent =
+    "Generating worksheet...";
+
+  result.innerHTML = "";
+
+  submitButton.style.display = "none";
+
+  scoreBox.style.display = "none";
+
+
+  try {
+
+    const prompt = `
+Create an interactive school worksheet.
 
 Grade: ${grade}
 Subject: ${subject}
 Topic: ${topic}
 Number of questions: ${count}
 
-Include:
-- A clear title
-- Short instructions
-- Numbered questions
-- Appropriate difficulty
-- A separate answer section at the end
+Return ONLY valid JSON.
 
-Do not make the questions too advanced for the grade.
+Use exactly this format:
+
+{
+  "title": "Worksheet title",
+  "instructions": "Short instructions",
+  "questions": [
+    {
+      "question": "Question text",
+      "answer": "Correct answer"
+    }
+  ]
+}
+
+Rules:
+- Create exactly ${count} questions
+- Make the questions appropriate for ${grade}
+- Keep the questions clear and suitable for children
+- Each question must have one clear correct answer
+- Do not include the answers anywhere except inside the answer field
+- Do not use markdown
+- Do not add anything before or after the JSON
 `;
 
-        const answer =
-          await callAI(
-            prompt,
-            subject,
-            grade
-          );
 
-        result.innerHTML =
-  formatTutorResponse(answer);
+    const answer =
+      await callAI(
+        prompt,
+        subject,
+        grade
+      );
 
-        status.textContent =
-          "Worksheet generated successfully.";
 
-      recordActivity(
-  document.getElementById("worksheetSubject").value,
-  null,
-  "Worksheet"
-);
+    let worksheet;
 
-        showToast(
-          "Worksheet ready.",
-          "success"
-        );
 
-      } catch (error) {
-        status.textContent =
-          "";
+    try {
 
-        showToast(
-          error.message,
-          "error"
-        );
-      }
+      const cleaned =
+        answer
+          .replace(/```json/gi, "")
+          .replace(/```/g, "")
+          .trim();
+
+      worksheet =
+        JSON.parse(cleaned);
+
+    } catch (parseError) {
+
+      throw new Error(
+        "The worksheet could not be created. Please try again."
+      );
     }
 
+
+    if (
+      !worksheet.questions ||
+      !Array.isArray(worksheet.questions) ||
+      worksheet.questions.length === 0
+    ) {
+      throw new Error(
+        "No questions were generated."
+      );
+    }
+
+
+    currentWorksheet =
+      worksheet.questions;
+
+
+    let html = `
+      <div class="worksheet-content">
+
+        <h2>
+          ${worksheet.title || "Worksheet"}
+        </h2>
+
+        <p>
+          ${worksheet.instructions || "Answer all questions"}
+        </p>
+    `;
+
+
+    worksheet.questions.forEach(
+      (item, index) => {
+
+        html += `
+          <div
+            class="worksheet-question"
+            style="margin:20px 0;"
+          >
+
+            <strong>
+              ${index + 1}. ${item.question}
+            </strong>
+
+            <input
+              type="text"
+              class="worksheet-answer"
+              data-question="${index}"
+              placeholder="Type your answer"
+              style="
+                display:block;
+                width:100%;
+                max-width:700px;
+                margin-top:10px;
+                padding:12px;
+              "
+            >
+
+          </div>
+        `;
+
+      }
+    );
+
+
+    html += `
+      </div>
+    `;
+
+
+    result.innerHTML = html;
+
+
+    submitButton.style.display =
+      "block";
+
+
+    status.textContent =
+      "Worksheet ready";
+
+
+    showToast(
+      "Worksheet ready",
+      "success"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Worksheet error:",
+      error
+    );
+
+    status.textContent = "";
+
+    showToast(
+      error.message ||
+      "The worksheet could not be generated",
+      "error"
+    );
+  }
+}
+
+
+/* =====================================================
+   SUBMIT WORKSHEET
+===================================================== */
+
+function submitWorksheet() {
+
+  if (
+    !currentWorksheet ||
+    currentWorksheet.length === 0
+  ) {
+    showToast(
+      "Generate a worksheet first",
+      "error"
+    );
+    return;
+  }
+
+
+  const answerInputs =
+    document.querySelectorAll(
+      ".worksheet-answer"
+    );
+
+
+  let correct = 0;
+
+
+  currentWorksheet.forEach(
+    (question, index) => {
+
+      const input =
+        answerInputs[index];
+
+      if (!input) return;
+
+
+      const studentAnswer =
+        input.value
+          .trim()
+          .toLowerCase();
+
+      const correctAnswer =
+        String(question.answer)
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        studentAnswer ===
+        correctAnswer
+      ) {
+
+        correct++;
+
+        input.style.border =
+          "2px solid #16a34a";
+
+      } else {
+
+        input.style.border =
+          "2px solid #dc2626";
+
+      }
+
+    }
+  );
+
+
+  const total =
+    currentWorksheet.length;
+
+
+  const percentage =
+    Math.round(
+      (correct / total) * 100
+    );
+
+
+  const score =
+    Math.round(
+      (correct / total) * 20
+    );
+
+
+  const scoreBox =
+    document.getElementById(
+      "worksheetScore"
+    );
+
+
+  scoreBox.innerHTML = `
+    <div style="font-size:22px;font-weight:bold;">
+      Score: ${score}/${20}
+    </div>
+
+    <div style="margin-top:8px;">
+      ${correct} correct out of ${total}
+    </div>
+
+    <div style="margin-top:8px;">
+      ${percentage}%
+    </div>
+  `;
+
+
+  scoreBox.style.display =
+    "block";
+
+
+  /* Save REAL worksheet result */
+
+  const subject =
+    document.getElementById(
+      "worksheetSubject"
+    ).value;
+
+
+  recordActivity(
+    subject,
+    percentage,
+    "Worksheet"
+  );
+
+
+  showToast(
+    `You scored ${score}/20`,
+    "success"
+  );
+}
    /* =====================================================
    PROGRESS — REAL RESULTS DASHBOARD
 ===================================================== */
