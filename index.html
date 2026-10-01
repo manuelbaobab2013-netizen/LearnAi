@@ -3693,42 +3693,52 @@ async function callAI(
 }
 
 /* =====================================================
-   PRACTICE TESTS
+   LEARN AI COACH
 ===================================================== */
 
-let practiceTestQuestions = [];
-let practiceTestStarted = false;
+let learnCoachState = {
+  grade: "",
+  subject: "",
+  topic: "",
+  difficulty: "Intermediate",
+  questionNumber: 1,
+  totalQuestions: 10,
+  score: 0,
+  currentQuestion: null,
+  answered: false,
+  questionsAsked: []
+};
 
 
 /* =====================================================
-   START PRACTICE TEST
+   START LEARN AI COACH
 ===================================================== */
 
-async function startPracticeTest() {
+async function startLearnAICoach() {
 
   const grade =
     document.getElementById(
-      "practiceTestGrade"
+      "learnCoachGrade"
     ).value;
 
   const subject =
     document.getElementById(
-      "practiceTestSubject"
+      "learnCoachSubject"
     ).value;
 
   const topic =
     document.getElementById(
-      "practiceTestTopic"
+      "learnCoachTopic"
     ).value.trim();
 
   const difficulty =
     document.getElementById(
-      "practiceTestDifficulty"
+      "learnCoachDifficulty"
     ).value;
 
   const status =
     document.getElementById(
-      "practiceTestStatus"
+      "learnCoachStatus"
     );
 
 
@@ -3744,176 +3754,48 @@ async function startPracticeTest() {
 
 
   status.textContent =
-    "Creating your 20-mark practice test...";
+    "Your LearnAI Coach is preparing your first question...";
 
 
   try {
 
-    const prompt = `
-Create a school practice test for LearnAI.
-
-Grade: ${grade}
-Subject: ${subject}
-Topic: ${topic}
-Difficulty: ${difficulty}
-
-Create EXACTLY 20 multiple-choice questions.
-
-Each question is worth 1 mark.
-
-IMPORTANT:
-Return ONLY valid JSON.
-
-Use exactly this format:
-
-[
-  {
-    "question": "Question text",
-    "options": [
-      "Option A",
-      "Option B",
-      "Option C",
-      "Option D"
-    ],
-    "answer": 0
-  }
-]
-
-The "answer" must be the number
-of the correct option:
-
-0 = Option A
-1 = Option B
-2 = Option C
-3 = Option D
-
-Do not include explanations.
-Do not include markdown.
-Do not include code fences.
-Do not write anything before or after the JSON.
-`;
+    learnCoachState = {
+      grade: grade,
+      subject: subject,
+      topic: topic,
+      difficulty: difficulty,
+      questionNumber: 1,
+      totalQuestions: 10,
+      score: 0,
+      currentQuestion: null,
+      answered: false,
+      questionsAsked: []
+    };
 
 
-    const answer =
-      await callAI(
-        prompt,
-        subject,
-        difficulty
-      );
+    await generateLearnAICoachQuestion();
 
-
-    let questions;
-
-
-    /* Try normal JSON first */
-
-    try {
-
-      questions =
-        JSON.parse(
-          answer.trim()
-        );
-
-    } catch {
-
-      /* Remove markdown code fences */
-
-      const cleaned =
-        answer
-          .replace(/```json/gi, "")
-          .replace(/```/g, "")
-          .trim();
-
-
-      questions =
-        JSON.parse(
-          cleaned
-        );
-    }
-
-
-    /* Validate the test */
-
-    if (
-      !Array.isArray(questions) ||
-      questions.length !== 20
-    ) {
-
-      throw new Error(
-        "The AI did not create exactly 20 questions."
-      );
-    }
-
-
-    for (
-      let i = 0;
-      i < questions.length;
-      i++
-    ) {
-
-      const item =
-        questions[i];
-
-      if (
-        !item.question ||
-        !Array.isArray(item.options) ||
-        item.options.length !== 4 ||
-        !Number.isInteger(
-          Number(item.answer)
-        ) ||
-        Number(item.answer) < 0 ||
-        Number(item.answer) > 3
-      ) {
-
-        throw new Error(
-          "The generated test has an invalid question."
-        );
-      }
-    }
-
-
-    practiceTestQuestions =
-      questions;
-
-    practiceTestStarted =
-      true;
-
-
-    /* Hide setup */
 
     document.getElementById(
-      "practiceTestSetup"
+      "learnCoachSetup"
     ).classList.add("hidden");
 
 
-    /* Hide old results */
-
     document.getElementById(
-      "practiceTestResults"
+      "learnCoachFinished"
     ).classList.add("hidden");
 
 
-    /* Show test */
-
     document.getElementById(
-      "practiceTestArea"
+      "learnCoachArea"
     ).classList.remove("hidden");
-
-
-    document.getElementById(
-      "practiceTestTitle"
-    ).textContent =
-      `${subject} — ${topic}`;
-
-
-    renderPracticeQuestions();
 
 
     status.textContent = "";
 
 
     showToast(
-      "Your practice test is ready!",
+      "Your LearnAI Coach is ready! 🚀",
       "success"
     );
 
@@ -3921,7 +3803,7 @@ Do not write anything before or after the JSON.
   } catch (error) {
 
     console.error(
-      "Practice Test error:",
+      "LearnAI Coach error:",
       error
     );
 
@@ -3931,7 +3813,7 @@ Do not write anything before or after the JSON.
 
     showToast(
       error.message ||
-      "Could not create the practice test.",
+      "Could not start LearnAI Coach.",
       "error"
     );
   }
@@ -3939,152 +3821,256 @@ Do not write anything before or after the JSON.
 
 
 /* =====================================================
-   DISPLAY QUESTIONS
+   GENERATE ONE QUESTION
 ===================================================== */
 
-function renderPracticeQuestions() {
+async function generateLearnAICoachQuestion() {
 
-  const container =
-    document.getElementById(
-      "practiceQuestions"
+  const state =
+    learnCoachState;
+
+
+  const previousQuestions =
+    state.questionsAsked
+      .slice(-5)
+      .join("\n");
+
+
+  const prompt = `
+You are the LearnAI Coach.
+
+Create ONE school learning question.
+
+Student grade: ${state.grade}
+Subject: ${state.subject}
+Topic: ${state.topic}
+Difficulty: ${state.difficulty}
+
+The student is learning one question at a time.
+
+Make the question clear and appropriate for the student's grade.
+
+The question can require a short written answer.
+
+Avoid repeating these recent questions:
+
+${previousQuestions || "None"}
+
+Return ONLY valid JSON.
+
+Use exactly this format:
+
+{
+  "question": "Question text",
+  "answer": "Correct answer",
+  "explanation": "Simple explanation of the answer"
+}
+
+Do not include markdown.
+Do not include code fences.
+Do not write anything before or after the JSON.
+`;
+
+
+  const answer =
+    await callAI(
+      prompt,
+      state.subject,
+      state.difficulty
     );
 
-  container.innerHTML = "";
+
+  let question;
 
 
-  practiceTestQuestions.forEach(
-    (item, index) => {
+  try {
 
-      const questionCard =
-        document.createElement(
-          "div"
-        );
-
-      questionCard.className =
-        "panel";
-
-      questionCard.style.marginBottom =
-        "18px";
-
-
-      const questionTitle =
-        document.createElement(
-          "h3"
-        );
-
-      questionTitle.textContent =
-        `${index + 1}. ${item.question}`;
-
-
-      questionCard.appendChild(
-        questionTitle
+    question =
+      JSON.parse(
+        answer.trim()
       );
 
+  } catch {
 
-      const options =
-        document.createElement(
-          "div"
-        );
-
-      options.style.marginTop =
-        "15px";
-
-
-      item.options.forEach(
-        (option, optionIndex) => {
-
-          const label =
-            document.createElement(
-              "label"
-            );
-
-          label.style.display =
-            "block";
-
-          label.style.padding =
-            "12px";
-
-          label.style.marginBottom =
-            "8px";
-
-          label.style.border =
-            "1px solid var(--border)";
-
-          label.style.borderRadius =
-            "10px";
-
-          label.style.cursor =
-            "pointer";
+    const cleaned =
+      answer
+        .replace(/```json/gi, "")
+        .replace(/```/g, "")
+        .trim();
 
 
-          const radio =
-            document.createElement(
-              "input"
-            );
-
-          radio.type =
-            "radio";
-
-          radio.name =
-            `practiceQuestion${index}`;
-
-          radio.value =
-            optionIndex;
-
-          radio.style.marginRight =
-            "10px";
-
-
-          label.appendChild(
-            radio
-          );
-
-          label.appendChild(
-            document.createTextNode(
-              option
-            )
-          );
-
-
-          options.appendChild(
-            label
-          );
-        }
+    question =
+      JSON.parse(
+        cleaned
       );
+  }
 
 
-      questionCard.appendChild(
-        options
-      );
+  if (
+    !question.question ||
+    !question.answer ||
+    !question.explanation
+  ) {
+
+    throw new Error(
+      "The AI created an invalid question."
+    );
+  }
 
 
-      container.appendChild(
-        questionCard
-      );
-    }
+  state.currentQuestion =
+    question;
+
+  state.answered =
+    false;
+
+
+  state.questionsAsked.push(
+    question.question
   );
 
 
-  document.getElementById(
-    "practiceTestProgress"
-  ).textContent =
-    "20 questions • 20 marks";
+  renderLearnAICoachQuestion();
+
+
+  setTimeout(() => {
+
+    speakLearnAICoachQuestion();
+
+  }, 400);
 }
 
 
 /* =====================================================
-   SUBMIT TEST
+   DISPLAY QUESTION
 ===================================================== */
 
-function submitPracticeTest() {
+function renderLearnAICoachQuestion() {
+
+  const state =
+    learnCoachState;
+
+  const question =
+    state.currentQuestion;
+
+
+  document.getElementById(
+    "learnCoachQuestionNumber"
+  ).textContent =
+    `QUESTION ${state.questionNumber} / ${state.totalQuestions}`;
+
+
+  document.getElementById(
+    "learnCoachScore"
+  ).textContent =
+    `⭐ ${state.score}`;
+
+
+  document.getElementById(
+    "learnCoachProgressBar"
+  ).style.width =
+    `${(state.questionNumber / state.totalQuestions) * 100}%`;
+
+
+  document.getElementById(
+    "learnCoachQuestion"
+  ).textContent =
+    question.question;
+
+
+  document.getElementById(
+    "learnCoachAnswer"
+  ).value = "";
+
+
+  document.getElementById(
+    "learnCoachFeedback"
+  ).textContent = "";
+
+
+  document.getElementById(
+    "learnCoachNextArea"
+  ).classList.add("hidden");
+
+
+  const character =
+    document.getElementById(
+      "learnCoachCharacter"
+    );
+
+
+  const speech =
+    document.getElementById(
+      "learnCoachSpeech"
+    );
+
+
+  character.textContent =
+    getRandomLearnAICoach();
+
+
+  speech.textContent =
+    "You can do this! 💪 Let's go!";
+}
+
+
+/* =====================================================
+   RANDOM COACH CHARACTER
+===================================================== */
+
+function getRandomLearnAICoach() {
+
+  const coaches = [
+    "🧑‍🏫",
+    "👩‍🏫",
+    "👨‍🏫",
+    "🧑‍🎓",
+    "👩‍🎓",
+    "👨‍🎓"
+  ];
+
+
+  return coaches[
+    Math.floor(
+      Math.random() *
+      coaches.length
+    )
+  ];
+}
+
+
+/* =====================================================
+   SUBMIT ANSWER
+===================================================== */
+
+async function checkLearnAICoachAnswer() {
+
+  const state =
+    learnCoachState;
+
 
   if (
-    !practiceTestStarted ||
-    practiceTestQuestions.length !== 20
+    state.answered
   ) {
 
+    return;
+  }
+
+
+  const input =
+    document.getElementById(
+      "learnCoachAnswer"
+    );
+
+
+  const studentAnswer =
+    input.value.trim();
+
+
+  if (!studentAnswer) {
+
     showToast(
-      "Please start a practice test first.",
+      "Type an answer first.",
       "error"
     );
 
@@ -4092,200 +4078,628 @@ function submitPracticeTest() {
   }
 
 
-  let correctAnswers = 0;
-  let unanswered = 0;
+  state.answered =
+    true;
 
 
-  practiceTestQuestions.forEach(
-    (item, index) => {
-
-      const selected =
-        document.querySelector(
-          `input[name="practiceQuestion${index}"]:checked`
-        );
+  const question =
+    state.currentQuestion;
 
 
-      if (!selected) {
-
-        unanswered++;
-
-        return;
-      }
-
-
-      if (
-        Number(selected.value) ===
-        Number(item.answer)
-      ) {
-
-        correctAnswers++;
-      }
-    }
-  );
-
-
-  /* Warn about unanswered questions */
-
-  if (unanswered > 0) {
-
-    const proceed =
-      confirm(
-        `You have ${unanswered} unanswered question${
-          unanswered === 1
-            ? ""
-            : "s"
-        }. Submit anyway?`
-      );
-
-    if (!proceed) {
-      return;
-    }
-  }
-
-
-  /* 20 questions = 20 marks */
-
-  const marks =
-    correctAnswers;
-
-  const percentage =
-    Math.round(
-      (marks / 20) * 100
+  const feedback =
+    document.getElementById(
+      "learnCoachFeedback"
     );
 
 
-  const subject =
+  const character =
     document.getElementById(
-      "practiceTestSubject"
-    ).value;
+      "learnCoachCharacter"
+    );
 
 
-  /* SAVE REAL RESULT TO PROGRESS */
-
-  recordActivity(
-    subject,
-    percentage,
-    "Practice Test"
-  );
+  const speech =
+    document.getElementById(
+      "learnCoachSpeech"
+    );
 
 
-  /* Keep Home average scores updated */
+  feedback.textContent =
+    "Checking your answer... 🤔";
+
+
+  try {
+
+    const prompt = `
+You are the LearnAI Coach.
+
+Check a student's answer.
+
+Question:
+${question.question}
+
+Correct answer:
+${question.answer}
+
+Student answer:
+${studentAnswer}
+
+Decide whether the student's answer is correct.
+
+Return ONLY valid JSON.
+
+Use exactly:
+
+{
+  "correct": true,
+  "feedback": "Short friendly feedback",
+  "explanation": "Simple explanation"
+}
+
+Use false if the answer is incorrect.
+
+Do not use markdown.
+Do not use code fences.
+`;
+
+
+    const answer =
+      await callAI(
+        prompt,
+        state.subject,
+        state.difficulty
+      );
+
+
+    let result;
+
+
+    try {
+
+      result =
+        JSON.parse(
+          answer.trim()
+        );
+
+    } catch {
+
+      const cleaned =
+        answer
+          .replace(/```json/gi, "")
+          .replace(/```/g, "")
+          .trim();
+
+
+      result =
+        JSON.parse(
+          cleaned
+        );
+    }
+
+
+    if (result.correct) {
+
+      state.score++;
+
+
+      character.textContent =
+        "😄";
+
+
+      speech.textContent =
+        "YES! Great job! 🎉";
+
+
+      feedback.innerHTML =
+        `
+        <strong>Correct! 🎉</strong><br>
+        ${result.feedback || "Excellent work!"}
+        <br><br>
+        ${result.explanation || ""}
+        `;
+
+
+      speakLearnAICoachText(
+        "Great job! You got it right!"
+      );
+
+
+    } else {
+
+      character.textContent =
+        "🤔";
+
+
+      speech.textContent =
+        "Almost! Let's learn from it 💡";
+
+
+      feedback.innerHTML =
+        `
+        <strong>Not quite yet 💡</strong><br>
+        ${result.feedback || "That's okay — let's learn it together."}
+        <br><br>
+        ${result.explanation || question.explanation}
+        `;
+
+
+      speakLearnAICoachText(
+        "That's okay! Let's learn from it."
+      );
+    }
+
+
+    document.getElementById(
+      "learnCoachScore"
+    ).textContent =
+      `⭐ ${state.score}`;
+
+
+    document.getElementById(
+      "learnCoachNextArea"
+    ).classList.remove("hidden");
+
+
+  } catch (error) {
+
+    console.error(
+      "Answer checking error:",
+      error
+    );
+
+
+    state.answered =
+      false;
+
+
+    feedback.textContent =
+      "I couldn't check that answer right now. Please try again.";
+  }
+}
+
+
+/* =====================================================
+   NEXT QUESTION
+===================================================== */
+
+async function nextLearnAICoachQuestion() {
+
+  const state =
+    learnCoachState;
+
 
   if (
-    !Array.isArray(
-      learningData.scores
-    )
+    state.questionNumber >=
+    state.totalQuestions
   ) {
 
-    learningData.scores = [];
+    finishLearnAICoach();
+
+    return;
   }
 
 
-  learningData.scores.push(
-    percentage
-  );
-
-
-  saveLearningData();
-
-
-  /* Show results */
-
-  document.getElementById(
-    "practiceTestArea"
-  ).classList.add("hidden");
+  state.questionNumber++;
 
 
   document.getElementById(
-    "practiceTestResults"
+    "learnCoachCharacter"
+  ).textContent =
+    "👀";
+
+
+  document.getElementById(
+    "learnCoachSpeech"
+  ).textContent =
+    "Ready for the next one? 🚀";
+
+
+  try {
+
+    await generateLearnAICoachQuestion();
+
+  } catch (error) {
+
+    console.error(
+      "Next question error:",
+      error
+    );
+
+
+    showToast(
+      "Could not create the next question.",
+      "error"
+    );
+  }
+}
+
+
+/* =====================================================
+   I DON'T KNOW
+===================================================== */
+
+function skipLearnAICoachQuestion() {
+
+  const state =
+    learnCoachState;
+
+
+  if (
+    state.answered
+  ) {
+
+    return;
+  }
+
+
+  state.answered =
+    true;
+
+
+  const question =
+    state.currentQuestion;
+
+
+  document.getElementById(
+    "learnCoachCharacter"
+  ).textContent =
+    "🧑‍🏫";
+
+
+  document.getElementById(
+    "learnCoachSpeech"
+  ).textContent =
+    "No worries! I'll teach you 💡";
+
+
+  document.getElementById(
+    "learnCoachFeedback"
+  ).innerHTML =
+    `
+    <strong>That's okay! 💡</strong><br><br>
+    <strong>Answer:</strong>
+    ${question.answer}
+    <br><br>
+    <strong>Explanation:</strong>
+    ${question.explanation}
+    `;
+
+
+  document.getElementById(
+    "learnCoachNextArea"
   ).classList.remove("hidden");
 
 
-  document.getElementById(
-    "practiceTestScore"
-  ).textContent =
-    `${marks} / 20`;
-
-
-  document.getElementById(
-    "practiceTestPercentage"
-  ).textContent =
-    `${percentage}%`;
-
-
-  const message =
-    document.getElementById(
-      "practiceTestMessage"
-    );
-
-
-  if (percentage >= 65) {
-
-    message.textContent =
-      "Great work! Keep building on your progress. 🎉";
-
-  } else {
-
-    message.textContent =
-      "Keep practising. Review this topic and try again. 📚";
-  }
-
-
-  practiceTestStarted =
-    false;
-
-
-  renderProgress();
-
-  updateHomeStats();
-
-
-  showToast(
-    `Test completed: ${marks}/20 (${percentage}%).`,
-    "success"
+  speakLearnAICoachText(
+    "No worries! I'll teach you."
   );
 }
 
 
 /* =====================================================
-   TAKE ANOTHER TEST
+   EXPLAIN
 ===================================================== */
 
-function resetPracticeTest() {
+function explainLearnAICoachQuestion() {
 
-  practiceTestQuestions = [];
+  const question =
+    learnCoachState.currentQuestion;
 
-  practiceTestStarted =
+
+  if (!question) {
+    return;
+  }
+
+
+  document.getElementById(
+    "learnCoachCharacter"
+  ).textContent =
+    "🧑‍🏫";
+
+
+  document.getElementById(
+    "learnCoachSpeech"
+  ).textContent =
+    "Let me explain this! 📖";
+
+
+  document.getElementById(
+    "learnCoachFeedback"
+  ).innerHTML =
+    `
+    <strong>💡 Explanation</strong><br><br>
+    ${question.explanation}
+    `;
+
+
+  speakLearnAICoachText(
+    question.explanation
+  );
+}
+
+
+/* =====================================================
+   HEAR QUESTION
+===================================================== */
+
+function speakLearnAICoachQuestion() {
+
+  const question =
+    learnCoachState.currentQuestion;
+
+
+  if (!question) {
+    return;
+  }
+
+
+  speakLearnAICoachText(
+    question.question
+  );
+}
+
+
+/* =====================================================
+   COACH VOICE
+===================================================== */
+
+function speakLearnAICoachText(text) {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    showToast(
+      "Voice is not supported by this browser.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  window.speechSynthesis.cancel();
+
+
+  const speech =
+    new SpeechSynthesisUtterance(
+      text
+    );
+
+
+  speech.rate =
+    1.08;
+
+  speech.pitch =
+    1.35;
+
+  speech.volume =
+    1;
+
+
+  const voices =
+    window.speechSynthesis.getVoices();
+
+
+  const preferredVoice =
+    voices.find(
+      voice =>
+        /en-US|en-GB/i.test(
+          voice.lang
+        )
+    );
+
+
+  if (preferredVoice) {
+
+    speech.voice =
+      preferredVoice;
+  }
+
+
+  window.speechSynthesis.speak(
+    speech
+  );
+}
+
+
+/* =====================================================
+   VOICE ANSWER
+===================================================== */
+
+function startLearnAIVoiceAnswer() {
+
+  const Recognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+  if (!Recognition) {
+
+    showToast(
+      "Voice answers are not supported in this browser.",
+      "error"
+    );
+
+    return;
+  }
+
+
+  const recognition =
+    new Recognition();
+
+
+  recognition.lang =
+    "en-US";
+
+  recognition.interimResults =
     false;
 
+  recognition.maxAlternatives =
+    1;
+
 
   document.getElementById(
-    "practiceTestResults"
+    "learnCoachSpeech"
+  ).textContent =
+    "I'm listening 🎤";
+
+
+  document.getElementById(
+    "learnCoachCharacter"
+  ).textContent =
+    "🎤";
+
+
+  recognition.onresult =
+    function(event) {
+
+      const transcript =
+        event.results[0][0].transcript;
+
+
+      document.getElementById(
+        "learnCoachAnswer"
+      ).value =
+        transcript;
+
+
+      document.getElementById(
+        "learnCoachSpeech"
+      ).textContent =
+        "I heard you! Now submit your answer ✅";
+    };
+
+
+  recognition.onerror =
+    function() {
+
+      document.getElementById(
+        "learnCoachSpeech"
+      ).textContent =
+        "I couldn't hear that. Try again 🎤";
+    };
+
+
+  recognition.start();
+}
+
+
+/* =====================================================
+   FINISH COACH
+===================================================== */
+
+function finishLearnAICoach() {
+
+  const state =
+    learnCoachState;
+
+
+  document.getElementById(
+    "learnCoachArea"
   ).classList.add("hidden");
 
 
   document.getElementById(
-    "practiceTestArea"
-  ).classList.add("hidden");
-
-
-  document.getElementById(
-    "practiceTestSetup"
+    "learnCoachFinished"
   ).classList.remove("hidden");
 
 
   document.getElementById(
-    "practiceTestTopic"
-  ).value = "";
+    "learnCoachFinalScore"
+  ).textContent =
+    `${state.score} / ${state.totalQuestions}`;
+
+
+  const percentage =
+    Math.round(
+      (state.score /
+        state.totalQuestions) *
+      100
+    );
+
+
+  let message;
+
+
+  if (percentage >= 90) {
+
+    message =
+      "Amazing work! You're on fire! 🔥🏆";
+
+  } else if (percentage >= 70) {
+
+    message =
+      "Great work! Keep learning! 🎉";
+
+  } else if (percentage >= 50) {
+
+    message =
+      "Good effort! Keep practising! 💪";
+
+  } else {
+
+    message =
+      "Keep going! Every question helps you improve! 🚀";
+  }
 
 
   document.getElementById(
-    "practiceQuestions"
-  ).innerHTML = "";
+    "learnCoachFinalMessage"
+  ).textContent =
+    `${percentage}% — ${message}`;
+
+
+  speakLearnAICoachText(
+    `Lesson complete! You scored ${state.score} out of ${state.totalQuestions}.`
+  );
 }
-    /* =====================================================
-       NEW CHAT
-    ===================================================== */
+
+
+/* =====================================================
+   RESET COACH
+===================================================== */
+
+function resetLearnAICoach() {
+
+  document.getElementById(
+    "learnCoachFinished"
+  ).classList.add("hidden");
+
+
+  document.getElementById(
+    "learnCoachArea"
+  ).classList.add("hidden");
+
+
+  document.getElementById(
+    "learnCoachSetup"
+  ).classList.remove("hidden");
+
+
+  document.getElementById(
+    "learnCoachTopic"
+  ).value = "";
+
+
+  learnCoachState = {
+    grade: "",
+    subject: "",
+    topic: "",
+    difficulty: "Intermediate",
+    questionNumber: 1,
+    totalQuestions: 10,
+    score: 0,
+    currentQuestion: null,
+    answered: false,
+    questionsAsked: []
+  };
+}
+
+
+/* =====================================================
+   NEW CHAT
+===================================================== */
 
     function newChat() {
       saveCurrentConversation();
