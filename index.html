@@ -1664,39 +1664,53 @@
 
 </section>
   
-      <!-- =========================
-     PRACTICE TESTS
+<!-- =========================
+     LEARN AI COACH
 ========================= -->
 
-<section class="page" id="page-practice-tests">
+<section class="page" id="page-learnai-coach">
 
   <div class="page-header">
-    <h1>PRACTICE TESTS 📝</h1>
+    <h1>LEARN AI COACH 🧑‍🏫</h1>
     <p>
-      Test your knowledge with a real 20-mark practice test.
+      Learn one question at a time with your personal LearnAI Coach
     </p>
   </div>
 
-  <!-- TEST SETUP -->
+  <!-- COACH SETUP -->
 
-  <div class="panel" id="practiceTestSetup">
+  <div class="panel" id="learnCoachSetup">
 
     <div class="worksheet-controls">
 
       <div class="field">
         <label>GRADE</label>
-        <select id="practiceTestGrade"></select>
+        <select id="learnCoachGrade">
+          <option value="6">Grade 6</option>
+          <option value="7">Grade 7</option>
+          <option value="8">Grade 8</option>
+          <option value="9">Grade 9</option>
+        </select>
       </div>
 
       <div class="field">
         <label>SUBJECT</label>
-        <select id="practiceTestSubject"></select>
+        <select id="learnCoachSubject">
+          <option value="Maths">Maths</option>
+          <option value="English">English</option>
+          <option value="Science">Science</option>
+          <option value="History">History</option>
+          <option value="Geography">Geography</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Biology">Biology</option>
+          <option value="Physics">Physics</option>
+        </select>
       </div>
 
       <div class="field">
         <label>TOPIC</label>
         <input
-          id="practiceTestTopic"
+          id="learnCoachTopic"
           placeholder="Example: Fractions"
         >
       </div>
@@ -1709,129 +1723,333 @@
     >
       <label>DIFFICULTY</label>
 
-      <select id="practiceTestDifficulty">
-
-        <option value="Beginner">
-          Beginner
-        </option>
-
-        <option
-          value="Intermediate"
-          selected
-        >
-          Intermediate
-        </option>
-
-        <option value="Advanced">
-          Advanced
-        </option>
-
+      <select id="learnCoachDifficulty">
+        <option value="Beginner">Beginner</option>
+        <option value="Intermediate" selected>Intermediate</option>
+        <option value="Advanced">Advanced</option>
       </select>
     </div>
 
     <button
       class="primary-btn"
-      onclick="startPracticeTest()"
+      onclick="startLearnAICoach()"
       style="margin-top:20px;"
     >
-      START 20-MARK TEST
+      START LEARNING 🚀
     </button>
 
     <div
-      id="practiceTestStatus"
+      id="learnCoachStatus"
       style="margin-top:15px;"
     ></div>
 
   </div>
 
 
-  <!-- TEST QUESTIONS -->
+  <!-- =========================
+       COACH LESSON
+  ========================= -->
 
   <div
     class="panel hidden"
-    id="practiceTestArea"
+    id="learnCoachArea"
   >
 
-    <div class="page-header">
+    <!-- PROGRESS -->
 
-      <h2 id="practiceTestTitle">
-        PRACTICE TEST
-      </h2>
+    <div style="margin-bottom:20px;">
 
-      <p id="practiceTestProgress">
-        20 questions • 20 marks
-      </p>
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          margin-bottom:8px;
+        "
+      >
+
+        <strong id="learnCoachQuestionNumber">
+          QUESTION 1 / 10
+        </strong>
+
+        <span id="learnCoachScore">
+          ⭐ 0
+        </span>
+
+      </div>
+
+      <div
+        style="
+          width:100%;
+          height:10px;
+          background:rgba(255,255,255,0.12);
+          border-radius:20px;
+          overflow:hidden;
+        "
+      >
+
+        <div
+          id="learnCoachProgressBar"
+          style="
+            width:10%;
+            height:100%;
+            border-radius:20px;
+            transition:width .3s ease;
+          "
+        ></div>
+
+      </div>
 
     </div>
 
-    <div id="practiceQuestions"></div>
 
-    <button
-      class="primary-btn"
-      id="submitPracticeTestButton"
-      onclick="submitPracticeTest()"
-      style="margin-top:20px;"
-    >
-      SUBMIT TEST
-    </button>
-
-  </div>
-
-
-  <!-- TEST RESULTS -->
-
-  <div
-    class="panel hidden"
-    id="practiceTestResults"
-  >
+    <!-- =========================
+         CHARACTER
+    ========================= -->
 
     <div
       style="
         text-align:center;
-        padding:25px;
+        padding:10px 10px 20px;
+      "
+    >
+
+      <div
+        id="learnCoachCharacter"
+        style="
+          font-size:90px;
+          line-height:1;
+          margin-bottom:15px;
+          transition:transform .2s ease;
+        "
+      >
+        🧑‍🏫
+      </div>
+
+      <h2 id="learnCoachName">
+        LearnAI Coach
+      </h2>
+
+      <p
+        id="learnCoachSpeech"
+        style="
+          font-size:18px;
+          line-height:1.5;
+          max-width:650px;
+          margin:10px auto;
+        "
+      >
+        Ready? Let's learn! 🚀
+      </p>
+
+      <!-- VOICE BUTTON -->
+
+      <button
+        class="primary-btn"
+        onclick="speakLearnAICoach()"
+        style="margin-top:8px;"
+      >
+        🔊 HEAR COACH
+      </button>
+
+    </div>
+
+
+    <!-- =========================
+         QUESTION
+    ========================= -->
+
+    <div
+      class="panel"
+      style="
+        margin-top:10px;
+        background:rgba(255,255,255,0.04);
       "
     >
 
       <div
         style="
-          font-size:50px;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:10px;
           margin-bottom:10px;
         "
       >
-        🎯
+
+        <h3 style="margin:0;">
+          QUESTION 💡
+        </h3>
+
+        <button
+          class="primary-btn"
+          onclick="speakLearnAICoachQuestion()"
+        >
+          🔊
+        </button>
+
       </div>
 
-      <h2>TEST COMPLETE</h2>
+      <p
+        id="learnCoachQuestion"
+        style="
+          font-size:21px;
+          font-weight:600;
+          line-height:1.6;
+          margin:0;
+        "
+      >
+        Your question will appear here
+      </p>
+
+    </div>
+
+
+    <!-- =========================
+         ANSWER
+    ========================= -->
+
+    <div
+      class="field"
+      style="margin-top:20px;"
+    >
+
+      <label>YOUR ANSWER</label>
+
+      <textarea
+        id="learnCoachAnswer"
+        rows="3"
+        placeholder="Type your answer here..."
+      ></textarea>
+
+    </div>
+
+
+    <!-- =========================
+         ANSWER BUTTONS
+    ========================= -->
+
+    <div
+      style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-top:15px;
+      "
+    >
+
+      <button
+        class="primary-btn"
+        onclick="startLearnAIVoiceAnswer()"
+      >
+        🎤 ANSWER BY VOICE
+      </button>
+
+      <button
+        class="primary-btn"
+        onclick="checkLearnAICoachAnswer()"
+      >
+        SUBMIT ✅
+      </button>
+
+      <button
+        class="primary-btn"
+        onclick="explainLearnAICoachQuestion()"
+      >
+        💡 EXPLAIN
+      </button>
+
+      <button
+        class="primary-btn"
+        onclick="skipLearnAICoachQuestion()"
+      >
+        🤔 I DON'T KNOW
+      </button>
+
+    </div>
+
+
+    <!-- =========================
+         FEEDBACK
+    ========================= -->
+
+    <div
+      id="learnCoachFeedback"
+      style="
+        margin-top:20px;
+        font-size:18px;
+        line-height:1.6;
+        text-align:center;
+      "
+    ></div>
+
+
+    <!-- NEXT QUESTION -->
+
+    <div
+      id="learnCoachNextArea"
+      class="hidden"
+      style="
+        text-align:center;
+        margin-top:20px;
+      "
+    >
+
+      <button
+        class="primary-btn"
+        onclick="nextLearnAICoachQuestion()"
+      >
+        NEXT QUESTION ➡️
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       FINISHED
+  ========================= -->
+
+  <div
+    class="panel hidden"
+    id="learnCoachFinished"
+  >
+
+    <div
+      style="
+        text-align:center;
+        padding:30px 20px;
+      "
+    >
+
+      <div style="font-size:70px;">
+        🎉
+      </div>
+
+      <h2>LESSON COMPLETE!</h2>
 
       <p
-        id="practiceTestScore"
+        id="learnCoachFinalScore"
         style="
-          font-size:36px;
+          font-size:30px;
           font-weight:800;
           margin:15px 0;
         "
       >
-        0 / 20
+        0 / 10
       </p>
 
-      <p
-        id="practiceTestPercentage"
-        style="
-          font-size:24px;
-          font-weight:700;
-        "
-      >
-        0%
+      <p id="learnCoachFinalMessage">
+        Great work! 🚀
       </p>
-
-      <p id="practiceTestMessage"></p>
 
       <button
         class="primary-btn"
-        onclick="resetPracticeTest()"
+        onclick="resetLearnAICoach()"
         style="margin-top:20px;"
       >
-        TAKE ANOTHER TEST
+        LEARN AGAIN 🔄
       </button>
 
     </div>
@@ -1839,10 +2057,10 @@
   </div>
 
 </section>
+
 <!-- =========================
      STREAKS
 ========================= -->
-
 <section class="page" id="page-streaks">
 
   <div class="page-header">
