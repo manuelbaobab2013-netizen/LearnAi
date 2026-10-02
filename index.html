@@ -4741,16 +4741,21 @@ function resetLearnAICoach() {
     /* =====================================================
        CONVERSATIONS
     ===================================================== */
+function loadConversations() {
+  const saved =
+    loadJSON(
+      "learnAIConversations",
+      []
+    );
 
-    function loadConversations() {
-      conversations =
-        loadJSON(
-          "learnAIConversations",
-          []
-        );
+  conversations =
+    Array.isArray(saved)
+      ? saved
+      : [];
 
-      renderConversations();
-    }
+  renderConversations();
+}
+    
 
     function saveConversations() {
       saveJSON(
