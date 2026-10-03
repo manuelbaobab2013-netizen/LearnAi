@@ -3711,11 +3711,12 @@ let learnCoachState = {
   questionNumber: 1,
   totalQuestions: 10,
   score: 0,
+  lives: 3,
   currentQuestion: null,
   answered: false,
-  questionsAsked: []
+  questionsAsked: [],
+  wrongAnswers: []
 };
-
 
 /* =====================================================
    START LEARN AI COACH
@@ -3774,6 +3775,7 @@ async function startLearnAICoach() {
       questionNumber: 1,
       totalQuestions: 10,
       score: 0,
+      lives: 3,
       currentQuestion: null,
       answered: false,
       questionsAsked: []
