@@ -4706,7 +4706,46 @@ function resetLearnAICoach() {
     questionsAsked: []
   };
 }
+/* =====================================================
+   EXIT COACH
+===================================================== */
 
+function exitLearnAICoach() {
+
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+
+  document.getElementById(
+    "learnCoachArea"
+  ).classList.add("hidden");
+
+  document.getElementById(
+    "learnCoachFinished"
+  ).classList.add("hidden");
+
+  document.getElementById(
+    "learnCoachSetup"
+  ).classList.remove("hidden");
+
+  document.getElementById(
+    "learnCoachTopic"
+  ).value = "";
+
+  learnCoachState = {
+    grade: "",
+    subject: "",
+    topic: "",
+    difficulty: "Intermediate",
+    questionNumber: 1,
+    totalQuestions: 10,
+    score: 0,
+    currentQuestion: null,
+    answered: false,
+    questionsAsked: [],
+    wrongAnswers: []
+  };
+}
 
 /* =====================================================
    NEW CHAT
