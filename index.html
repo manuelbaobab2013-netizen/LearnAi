@@ -4206,10 +4206,14 @@ Do not use code fences.
       );
 
 
-    } else {
+  } else {
 
-      character.textContent =
-        "🤔";
+  state.lives--;
+
+  updateLearnAICoachLives();
+
+  character.textContent =
+    "🤔";
 
 
       speech.textContent =
@@ -4259,7 +4263,20 @@ Do not use code fences.
   }
 }
 
+function updateLearnAICoachLives() {
 
+  const lives =
+    learnCoachState.lives;
+
+  const hearts =
+    "❤️ ".repeat(lives) +
+    "🖤 ".repeat(3 - lives);
+
+  document.getElementById(
+    "learnCoachLives"
+  ).textContent =
+    hearts.trim();
+}
 /* =====================================================
    NEXT QUESTION
 ===================================================== */
